@@ -30,15 +30,15 @@ public class UIMain {
             this.time = time;
             this.volume = volume;
         }
-        private static final int SIZE = 1000;
     }
         public static void main(String[] args) {
 
             Core.init();
 
             Core.render.onEvent(() -> {
+                
                 for (int i = 0; i < TEXT_LENGTH; i++){
-                Graphics2D.drawLine(new Vec2(0, i * 80), new Vec2(SIZE, i * 80), Color4.BLACK, 60);
+                Graphics2D.drawLine(new Vec2(-1 * SIZE, i * 80), new Vec2(SIZE, i * 80), Color4.BLACK, 60);
                 // Drawing code can go here
                 }
                 });
