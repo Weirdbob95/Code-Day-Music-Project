@@ -16,9 +16,12 @@ import util.Color4;
 import static util.Color4.*;
 import util.RegisteredEntity;
 import util.Vec2;
+
 public class UIMain {
+
     private static final int SIZE = 100;
     private static final int TEXT_LENGTH = 8;
+
     private class Note {
 
         public int note; // 60 is middle C, 61 is C-sharp, 62 is D, 63 is D-sharp, 64 is E, 65 is F, etc
@@ -31,22 +34,27 @@ public class UIMain {
             this.volume = volume;
         }
     }
-        public static void main(String[] args) {
 
-            Core.init();
+    public static void main(String[] args) {
 
-            Core.render.onEvent(() -> {
-                
-                for (int i = 0; i < TEXT_LENGTH; i++){
-                Graphics2D.drawLine(new Vec2(-1 * SIZE, i * 80), new Vec2(SIZE, i * 80), Color4.BLACK, 60);
-                // Drawing code can go here
+        Core.init();
+
+        Core.render.onEvent(() -> {
+
+            for (int i = 0; i < TEXT_LENGTH; i++) {
+                for (int j = 0; j < 5; j++) {
+
+                    Graphics2D.drawLine(new Vec2(-1 * SIZE, i * 80), new Vec2(SIZE, i * 80), Color4.RED, 2);
+                    // Drawing code can go here
                 }
-                });
+                
+            }
+        });
 
-            Core.run();
-        }
-
-        public void recognize(Note n) {
-
-        }
+        Core.run();
     }
+
+    public void recognize(Note n) {
+
+    }
+}
