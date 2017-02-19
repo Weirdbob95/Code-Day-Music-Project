@@ -17,7 +17,7 @@ public abstract class DataChunk {
     protected ArrayList<Float> fdata;
     protected ArrayList<Byte>  data;
 
-    public abstract void addNote(Note note);
+    public abstract void addFrame(Frame frame);
 
     public abstract byte[] Write();
 

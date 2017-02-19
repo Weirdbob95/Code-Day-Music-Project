@@ -1,10 +1,11 @@
 package data;
 
+import soundconverter.wavfile.Frame;
 import soundconverter.wavfile.Instrument;
 import soundconverter.wavfile.Piano;
 
 // A class that represents a single note. Feel free to change this as needed.
-public class Note {
+public class Note implements Frame {
 
     public int bpm;
     public int note; // 60 is middle C, 61 is C-sharp, 62 is D, 63 is D-sharp, 64 is E, 65 is F, etc
@@ -29,6 +30,7 @@ public class Note {
         this.bpm = bpm;
         this.dwSamplePerSec = dwSamplePerSec;
     }
+
 
     public float[] toData32() {
         return toData32(instrument.freq(this.note));
@@ -64,6 +66,14 @@ public class Note {
         return data;
     }
 
+    public int[] toData16() {
+        throw new IllegalStateException("not implemented yet!");
+    }
+
+    public short[] toData8() {
+        throw new IllegalStateException("not implemented yet!");
+    }
+
     public String toString() {
         String result = "";
         result += "instrument:\t" + this.instrument + "\n";
@@ -75,14 +85,7 @@ public class Note {
         return result;
     }
 
-//    public void printData() {
-//        float[] data = this.toData32();
-//        for (int i = 0; i < data.length; i++) {
-//            System.out.println(" " + data[i]);
-//        }
-//    }
     public static void main(String[] args) {
         Note note = new Note(new Piano(), 60, 1, 0.5, 60, 44100);
-//        note.printData();
     }
 }

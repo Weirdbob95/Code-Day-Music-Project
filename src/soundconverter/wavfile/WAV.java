@@ -21,8 +21,9 @@ public class WAV {
 //    public byte[]    data;
 
     // given a list of notes, construct the data chunk, headers and format
-    public WAV(List<Note> notes, int wFormatTag, int wChannels, long dwSamplesPerSec, int wBitsPerSample) {
-        this.dataChunk = new DataChunk32(notes);
+    public WAV(List<Frame> frames, int wFormatTag, int wChannels, long
+            dwSamplesPerSec, int wBitsPerSample) {
+        this.dataChunk = new DataChunk32(frames);
         this.format    = new Format(wFormatTag, wChannels,dwSamplesPerSec,wBitsPerSample);
         this.header    = new Header(44 + this.dataChunk.fdata.size() * 4 - 8);
     }
@@ -69,25 +70,27 @@ public class WAV {
         }
     }
 
+    public static void genWAE(List<Frame> frames, String filename, int dwSamplePerSec) {
+        WAV wav = new WAV(frames,1, 1, dwSamplePerSec,32);
+
+        wav.printHeader();
+        wav.printFormat();
+        wav.write(filename);
+    }
+
 
     public static void main(String[] args) {
-        // try using piano
-        List<Note> notes = new ArrayList<>();
+        List<Frame> frames = new ArrayList<>();
         Note note;
 
         Instrument piano = new Piano();
 
-        int dwSamplePerSec = 44100;
         for (int i = 0; i < 10; i++) {
-            note = new Note(piano, 60 + i, 4, 0.5, 60, dwSamplePerSec);
+            note = new Note(piano, 60 + i, 4, 0.5, 60, 44100);
             System.out.println("\tadding..\n" + note);
-            notes.add(note);
+            frames.add(note);
         }
 
-        WAV wav = new WAV(notes,1, 1, dwSamplePerSec,32);
-
-        wav.printHeader();
-        wav.printFormat();
-        wav.write("mywav.wav");
+        genWAE(frames, "mywave.wav", 44100);
     }
 }

@@ -18,23 +18,23 @@ public class DataChunk32 extends DataChunk {
     public static final float MAX_AMP = Float.MAX_VALUE;
     public static final float MIN_AMP = Float.MIN_VALUE;
 
-    public DataChunk32(List<Note> notes) {
+    public DataChunk32(List<Frame> frames) {
         // initialize the chunk
         this.dwChunkSize = 0;
         this.fdata = new ArrayList<>();
         this.data = new ArrayList<>();
 
-        for (Note note : notes) {
-            addNote(note);
+        for (Frame f : frames) {
+            addFrame(f);
         }
     }
 
-    public DataChunk32(Note note) {
+    public DataChunk32(Frame frame) {
         this.dwChunkSize = 0;
         this.fdata = new ArrayList<>();
         this.data  = new ArrayList<>();
 
-        addNote(note);
+        addFrame(frame);
     }
 
     public DataChunk32() {
@@ -43,9 +43,9 @@ public class DataChunk32 extends DataChunk {
         this.data  = new ArrayList<>();
     }
 
-    // create a new byte array adding the new note
-    // mutation! (for efficiency)
-    public void addNote(Note note) {
+    // create a new byte array adding the new frame (note or section)
+    // WARNING: mutation happens! (for efficiency)
+    public void addFrame(Frame note) {
         float[] nfdata = note.toData32();
 
         for (int i = 0; i < nfdata.length; i++)
@@ -67,36 +67,10 @@ public class DataChunk32 extends DataChunk {
         return buffer.array();
     }
 
-    /*
-    public byte[] constructNote(Note note) {
-        int fileSize = 12 + 24 + 8 + this.dwChunkSize * this.dataSize;
-
-        System.out.println("file size = " + fileSize);
-        ByteBuffer data = ByteBuffer.allocate(fileSize);
-
-        Header hdr = new Header();
-        hdr.dwFileLength = fileSize - 8;
-
-        Format fmt = new Format();
-
-        data.put(hdr.Write());
-        data.put(fmt.Write());
-
-        data.put(sGroupID.getBytes());
-        data.putLong(Integer.toUnsignedLong(dwChunkSize));
-
-        for (int i = 0; i < dwChunkSize; i++) {
-            data.putFloat(data32[i]);
-        }
-
-    }
-    */
-
-
     // test size
     public static void main(String[] args) {
         Note note = new Note(new Piano(), 60, 1, 0.5, 60, 44100);
-        List<Note> notes = new ArrayList<>();
+        List<Frame> notes = new ArrayList<>();
 
         notes.add(note);
         DataChunk data = new DataChunk32(notes);
