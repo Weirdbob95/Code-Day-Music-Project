@@ -11,7 +11,7 @@ import javax.sound.sampled.*;
  * @author Kenneth J. Goldman, adapted in part from code by Ming Chow
  * @version 1.0
  */
-class Recorder {
+public class Recorder {
 
     private AudioFileFormat.Type fileType = AudioFileFormat.Type.WAVE;
     private AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, true);

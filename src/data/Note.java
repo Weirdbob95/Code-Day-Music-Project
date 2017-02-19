@@ -1,11 +1,10 @@
 package data;
 
+import java.util.Arrays;
 import soundconverter.wavfile.Frame;
 import soundconverter.wavfile.Instrument;
 import soundconverter.wavfile.Piano;
 import util.Vec2;
-
-import java.util.Arrays;
 
 // A class that represents a single note. Feel free to change this as needed.
 public class Note implements Frame {
@@ -34,7 +33,7 @@ public class Note implements Frame {
         this.volume = volume;
         this.bpm = bpm;
         this.dwSamplePerSec = dwSamplePerSec;
-        this.pos = new Vec2(0,0);
+        this.pos = new Vec2(0, 0);
     }
 
     public float[] toData32() {
