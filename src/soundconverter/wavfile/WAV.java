@@ -34,6 +34,8 @@ public class WAV {
             throw new IllegalArgumentException("wrong wBitsPerSample");
         }
 
+//        System.out.println("data size = ")
+
         this.header    = new Header(44 + this.dataChunk.dwChunkSize - 8);
         this.format    = new Format(wFormatTag, wChannels,dwSamplesPerSec,wBitsPerSample);
     }
@@ -87,17 +89,22 @@ public class WAV {
 
         Instrument piano = new Piano();
 
-        for (int i = 0; i < 10; i++) {
-            note = new Note(piano, 60 + i, 4, 0.5, 60, 44100);
-            System.out.println("\tadding..\n" + note);
-            frames.add(note);
-        }
+//        for (int i = 0; i < 10; i++) {
+//            note = new Note(piano, 60 + i, 4, 0.5, 60, 44100);
+//            System.out.println("\tadding..\n" + note);
+//            frames.add(note);
+//        }
 
 //        for (int i = 0; i < 10; i++) {
 //            note = new Note(piano, -1, 4, 0.5, 60, 44100);
 //            System.out.println("\tadding..\n" + note);
 //            frames.add(note);
 //        }
+
+        frames.add(new Note(55, 4));
+        frames.add(new Note(60, 4));
+        frames.add(new Note(63, 4));
+        frames.add(new Note(65, 4));
 
         genWAE(frames, "mywave32.wav", 44100, 32);
         genWAE(frames, "mywave16.wav", 44100, 16);
