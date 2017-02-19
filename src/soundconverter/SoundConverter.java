@@ -67,7 +67,7 @@ public class SoundConverter {
                 r.endRecording();
                 loadFile("sounds/recording");
                 List music = MusicCreator.toNoteList(result);
-                WAV.genWAE(music, "sounds/music", 44100);
+                WAV.genWAE(music, "sounds/music", 44100, 8);
                 drawFFT(fft, pixelSize);
                 playFile("sounds/music");
                 //playFile("sounds/recording");
