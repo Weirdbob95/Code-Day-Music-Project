@@ -31,7 +31,6 @@ public class Note {
     }
 
     public float[] toData32() {
-        // TODO: note -> freq
         return toData32(instrument.freq(this.note));
     }
 
