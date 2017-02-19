@@ -57,7 +57,7 @@ public class DataChunk8 extends DataChunk {
         buffer.put(toLE((int)dwChunkSize));
 
         for (int i = 0; i < fdata.size(); i++) {
-            buffer.put(toLE(fdata.get(i)));
+            buffer.put(fdata.get(i));
         }
 
         return buffer.array();

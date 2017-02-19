@@ -18,6 +18,7 @@ import javax.sound.sampled.Clip;
 import org.lwjgl.input.Keyboard;
 import soundconverter.fft.Complex;
 import soundconverter.fft.FFT;
+import soundconverter.wavfile.Frame;
 import soundconverter.wavfile.WAV;
 import soundconverter.wavfile.WavFile;
 import soundconverter.wavfile.WavFileException;
@@ -78,9 +79,11 @@ public class SoundConverter {
         });
 
         Input.whenKey(Keyboard.KEY_T, true).onEvent(() -> {
-            loadFile("sounds/test.wav");
+            loadFile("sounds/dream-battle.wav");
+            List music = MusicCreator.toNoteList(result);
+            WAV.genWAE(music, "sounds/music", 44100, 32);
             drawFFT(fft, pixelSize);
-            playFile("sounds/test.wav");
+            playFile("sounds/dream-battle.wav");
             initialTime.o = System.currentTimeMillis();
         });
 

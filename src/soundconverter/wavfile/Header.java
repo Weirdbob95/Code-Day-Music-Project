@@ -67,7 +67,7 @@ class Header {
     }
 
     public void printLength() {
-        byte[] bytes = toLE((int) (dwFileLength << 16));
+        byte[] bytes = toLE((int)dwFileLength);
 
         for (int i = 0; i < bytes.length; i++) {
             System.out.println(Byte.toString(bytes[i]));

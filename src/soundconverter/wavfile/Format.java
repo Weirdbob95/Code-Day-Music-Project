@@ -11,18 +11,17 @@ import java.util.Arrays;
 class Format {
     public static final int sGroupID = 0x666D7420;
     public long dwChunkSize = 16L;
-    public int wFormatTag;// = 1;
-    public int wChannels;// = 2;
-    public long dwSamplesPerSec;// = 44100;
+    public int wFormatTag;
+    public int wChannels;
+    public long dwSamplesPerSec;
     public long dwAvgBytesPerSec;
-    public int wBitsPerSample;// = 16;
+    public int wBitsPerSample;
     public int wBlockAlign;
 
     // TODO: get constants on construction
     // 16, 1, 2, 22100,16
     public Format(int wFormatTag, int wChannels, long
             dwSamplesPerSec, int wBitsPerSample) {
-        this.dwChunkSize = dwChunkSize;
         this.wFormatTag = wFormatTag;
         this.wChannels = wChannels;
         this.dwSamplesPerSec = dwSamplesPerSec;
@@ -37,21 +36,14 @@ class Format {
         temp.order(ByteOrder.LITTLE_ENDIAN);
         temp.putInt(num);
 
-        byte[] result = temp.array();
-//        System.out.println(Arrays.toString(result));
-
-        return result;
+        return temp.array();
     }
 
     private byte[] toLE(short num) {
         ByteBuffer temp = ByteBuffer.allocate(2);
         temp.order(ByteOrder.LITTLE_ENDIAN);
         temp.putShort(num);
-        byte[] result = temp.array();
-
-//        System.out.println(Arrays.toString(result));
-
-        return result;
+        return temp.array();
     }
 
     public byte[] Write() {

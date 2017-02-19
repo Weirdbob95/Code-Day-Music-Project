@@ -65,14 +65,14 @@ public class DataChunk16 extends DataChunk {
     }
 
     // test size
-    public static void main(String[] args) {
-        Note note = new Note(new Piano(), 60, 1, 0.5, 60, 44100);
-        List<Frame> notes = new ArrayList<>();
-
-        notes.add(note);
-        DataChunk data = new DataChunk16(notes);
+//    public static void main(String[] args) {
+//        Note note = new Note(new Piano(), 60, 1, 0.5, 60, 44100);
+//        List<Frame> notes = new ArrayList<>();
+//
+//        notes.add(note);
+//        DataChunk data = new DataChunk16(notes);
 
 //        System.out.println(Arrays.toString(data.Write()));
-    }
+//    }
 
 }

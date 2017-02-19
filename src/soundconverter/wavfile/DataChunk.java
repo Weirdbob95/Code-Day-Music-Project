@@ -19,11 +19,7 @@ public abstract class DataChunk {
     public abstract byte[] Write();
 
     protected byte[] toLE(byte num) {
-        ByteBuffer temp = ByteBuffer.allocate(1);
-        temp.order(ByteOrder.LITTLE_ENDIAN);
-        temp.put(num);
-
-        return temp.array();
+        return new byte[]{ num };
     }
 
     protected byte[] toLE(short num) {
@@ -38,6 +34,14 @@ public abstract class DataChunk {
         ByteBuffer temp = ByteBuffer.allocate(4);
         temp.order(ByteOrder.LITTLE_ENDIAN);
         temp.putFloat(num);
+
+        return temp.array();
+    }
+
+    protected byte[] toLE(int num) {
+        ByteBuffer temp = ByteBuffer.allocate(4);
+        temp.order(ByteOrder.LITTLE_ENDIAN);
+        temp.putInt(num);
 
         return temp.array();
     }

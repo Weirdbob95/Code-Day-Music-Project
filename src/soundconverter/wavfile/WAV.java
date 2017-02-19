@@ -74,8 +74,8 @@ public class WAV {
     }
 
     public static void genWAE(List<Frame> frames, String filename, int
-            dwSamplePerSec, int bits) {
-        WAV wav = new WAV(frames,1, 1, dwSamplePerSec, bits);
+            dwSamplePerSec, int wBitsPerSample) {
+        WAV wav = new WAV(frames,1, 1, dwSamplePerSec, wBitsPerSample);
 
         wav.printHeader();
         wav.printFormat();
@@ -85,9 +85,6 @@ public class WAV {
 
     public static void main(String[] args) {
         List<Frame> frames = new ArrayList<>();
-        Note note;
-
-        Instrument piano = new Piano();
 
 //        for (int i = 0; i < 10; i++) {
 //            note = new Note(piano, 60 + i, 4, 0.5, 60, 44100);
