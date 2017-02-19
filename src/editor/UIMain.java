@@ -17,6 +17,7 @@ import static util.Color4.*;
 import util.RegisteredEntity;
 import util.Vec2;
 
+/*
 public class UIMain {
 
     private static final int SIZE = 100;
@@ -112,3 +113,4 @@ public class UIMain {
     
     
 }
+*/

@@ -48,29 +48,20 @@ public class DataChunk32 extends DataChunk {
     public void addNote(Note note) {
         float[] nfdata = note.toData32();
 
-        ByteBuffer bdata = ByteBuffer.allocate(data.size() + nfdata.length * 4);
-
-        for (int i = 0; i < nfdata.length; i++) {
-            bdata.put(toLE(nfdata[i]));
+        for (int i = 0; i < nfdata.length; i++)
             fdata.add(nfdata[i]);
-        }
 
-        byte[] bytes = bdata.array();
-
-        for (int i = 0; i < bytes.length; i++)
-            data.add(bytes[i]);
-
-        this.dwChunkSize = data.size();
+        this.dwChunkSize = fdata.size();
     }
 
     public byte[] Write() {
-        ByteBuffer buffer = ByteBuffer.allocate(8 + data.size());
+        ByteBuffer buffer = ByteBuffer.allocate(8 + fdata.size() * 4);
 
-        buffer.put(sGroupID.getBytes());
+        buffer.putInt(sGroupID);
         buffer.put(toLE((int)dwChunkSize));
 
-        for (int i = 0; i < data.size(); i++) {
-            buffer.put(data.get(i));
+        for (int i = 0; i < fdata.size(); i++) {
+            buffer.put(toLE(fdata.get(i)));
         }
 
         return buffer.array();
@@ -104,7 +95,7 @@ public class DataChunk32 extends DataChunk {
 
     // test size
     public static void main(String[] args) {
-        Note note = new Note(60, 1, 0.5, 60, 44100);
+        Note note = new Note(new Piano(), 60, 1, 0.5, 60, 44100);
         List<Note> notes = new ArrayList<>();
 
         notes.add(note);

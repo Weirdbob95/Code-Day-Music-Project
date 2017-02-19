@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * extended by DataChunk[size]
  */
 public abstract class DataChunk {
-    protected static final String sGroupID = "data";
+    protected static final int sGroupID = 0x64617461;
     protected long dwChunkSize;
 
     protected ArrayList<Float> fdata;

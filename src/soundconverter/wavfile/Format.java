@@ -29,7 +29,7 @@ class Format {
         this.wBitsPerSample = wBitsPerSample;
 
         this.dwAvgBytesPerSec = this.dwSamplesPerSec * this.wBlockAlign;
-        this.wBlockAlign = (short)((wChannels * wBitsPerSample / 8));
+        this.wBlockAlign = wChannels * wBitsPerSample / 8;
     }
 
     private byte[] toLE(int num) {

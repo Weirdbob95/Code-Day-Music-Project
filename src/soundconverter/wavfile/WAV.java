@@ -24,7 +24,7 @@ public class WAV {
     public WAV(List<Note> notes, int wFormatTag, int wChannels, long dwSamplesPerSec, int wBitsPerSample) {
         this.dataChunk = new DataChunk32(notes);
         this.format    = new Format(wFormatTag, wChannels,dwSamplesPerSec,wBitsPerSample);
-        this.header    = new Header(44 + this.dataChunk.data.size() - 8);
+        this.header    = new Header(44 + this.dataChunk.fdata.size() * 4 - 8);
     }
 
     // for debug
@@ -71,12 +71,20 @@ public class WAV {
 
 
     public static void main(String[] args) {
-        Note note = new Note(60, 1, 0.5, 60, 44100);
+        // try using piano
         List<Note> notes = new ArrayList<>();
+        Note note;
 
-        notes.add(note);
+        Instrument piano = new Piano();
 
-        WAV wav = new WAV(notes,1, 2, 44100,16);
+        int dwSamplePerSec = 44100;
+        for (int i = 0; i < 10; i++) {
+            note = new Note(piano, 60 + i, 4, 0.5, 60, dwSamplePerSec);
+            System.out.println("\tadding..\n" + note);
+            notes.add(note);
+        }
+
+        WAV wav = new WAV(notes,1, 1, dwSamplePerSec,32);
 
         wav.printHeader();
         wav.printFormat();
