@@ -21,9 +21,8 @@ public class inputManager {
     public String name;
     public int topLine;
 
-    public inputManager(List<Note> list, String pitch, String name) {
+    public inputManager(List<Note> list, String name) {
         this.list = list;
-        this.pitch = pitch;
         this.name = name;
         this.topLine = 0;
 
