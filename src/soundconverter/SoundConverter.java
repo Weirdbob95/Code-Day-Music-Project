@@ -15,10 +15,10 @@ import java.util.List;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineEvent;
 import org.lwjgl.input.Keyboard;
 import soundconverter.fft.Complex;
 import soundconverter.fft.FFT;
-import soundconverter.wavfile.WAV;
 import soundconverter.wavfile.WavFile;
 import soundconverter.wavfile.WavFileException;
 import util.Color4;
@@ -67,10 +67,10 @@ public class SoundConverter {
                 r.endRecording();
                 loadFile("sounds/recording");
                 List music = MusicCreator.toNoteList(result);
-                WAV.genWAE(music, "sounds/music", 44100, 8);
+//                WAV.genWAE(music, "sounds/music", 44100, 8);
                 drawFFT(fft, pixelSize);
-                playFile("sounds/music");
-                //playFile("sounds/recording");
+//                playFile("sounds/music");
+                playFile("sounds/recording");
                 initialTime.o = System.currentTimeMillis();
                 recording.o = false;
                 System.out.println("Recording finished");
@@ -116,6 +116,11 @@ public class SoundConverter {
             Clip clip = AudioSystem.getClip();
             clip.open(ais);
             clip.start();
+            clip.addLineListener(myLineEvent -> {
+                if (myLineEvent.getType() == LineEvent.Type.STOP) {
+                    clip.close();
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }

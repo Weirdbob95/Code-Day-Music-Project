@@ -16,10 +16,10 @@ import org.lwjgl.input.Keyboard;
 import org.newdawn.slick.Color;
 import soundconverter.MusicCreator;
 import soundconverter.Recorder;
-import static soundconverter.SoundConverter.loadFile;
-import static soundconverter.SoundConverter.result;
+import static soundconverter.SoundConverter.*;
 import soundconverter.wavfile.Instrument;
 import soundconverter.wavfile.Piano;
+import soundconverter.wavfile.WAV;
 import util.Color4;
 import util.Mutable;
 import util.Vec2;
@@ -51,6 +51,7 @@ public class UIMain {
         }
 
         inputManager user = new inputManager(notesList, "Suite I");
+        userInteraction(user);
         userInteraction(user, piano);
         drawState(user);
 
@@ -181,6 +182,26 @@ public class UIMain {
 
     public static boolean isValidSelection(int selected) {
         return selected >= 0 && selected < notesList.size();
+    }
+
+    public static void userInteraction(inputManager user) {
+        Input.whenMouse(0, true).onEvent(() -> {
+            Vec2 click = Input.getMouse();
+//        System.out.print(click.x + 460 + " " + (click.y - 5));
+            if (Math.abs(click.x + 420) <= 40 && (Math.abs(click.y + 5)) <= 40) {
+                System.out.println(click.x + ",piano" + click.y);
+//                userInteraction(user, new Piano());
+                WAV.genWAE((List) notesList, "1234", 44100, 8);
+                playFile("1234");
+            } else if (Math.abs(click.x + 330) <= 40 && (Math.abs(click.y + 5)) <= 40) {
+//                userInteraction(user, new Piano());
+                System.out.println(click.x + ",trumpet" + click.y);
+            } else if (Math.abs(click.x + 260) <= 20 && (Math.abs(click.y + 20)) <= 20) {
+                user.verse++;
+            } else {
+//                userInteraction(user, new Piano());
+            }
+        });
     }
 
     public static void userInteraction(inputManager user, Instrument instru) {

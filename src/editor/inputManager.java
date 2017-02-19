@@ -19,6 +19,7 @@ public class inputManager {
     public String pitch;
     public String name;
     public int topLine;
+    public int verse = 3;
 
     public inputManager(List<Note> list, String name) {
         this.list = list;
