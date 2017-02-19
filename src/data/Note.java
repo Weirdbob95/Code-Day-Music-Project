@@ -1,7 +1,5 @@
 package data;
 
-
-import soundconverter.wavfile.DataChunk;
 import soundconverter.wavfile.Instrument;
 import soundconverter.wavfile.Piano;
 
@@ -19,9 +17,11 @@ public class Note {
     private float maxAmp32 = Float.MAX_VALUE;
     private int dwSamplePerSec;
 
-    public Note(Instrument instrument, int note, int time, double volume, int
-            bpm, int
-            dwSamplePerSec) {
+    public Note(int note, int time) {
+        this(new Piano(), note, time, 1, 60, 44100);
+    }
+
+    public Note(Instrument instrument, int note, int time, double volume, int bpm, int dwSamplePerSec) {
         this.instrument = instrument;
         this.note = note;
         this.time = time;
@@ -36,10 +36,11 @@ public class Note {
 
     private float mix(double t, int i) {
         double result = 0;
-        for (int j = 0; j < i; j++)
+        for (int j = 0; j < i; j++) {
             result += Math.sin(t * j);
+        }
 
-        return Math.abs((float)result/i);
+        return Math.abs((float) result / i);
     }
 
     // returns data for that note (for 32-bit audio)
@@ -56,7 +57,7 @@ public class Note {
         double t = (Math.PI * freq * 2) / dwSamplePerSec;
 
         for (int i = 0; i < sampleDataSize; i++) {
-            data[i] = (float)(amplitude * Math.sin(t * i));
+            data[i] = (float) (amplitude * Math.sin(t * i));
 //            data[i] = (float)(amplitude * mix(i,3));
         }
 
@@ -80,7 +81,6 @@ public class Note {
 //            System.out.println(" " + data[i]);
 //        }
 //    }
-
     public static void main(String[] args) {
         Note note = new Note(new Piano(), 60, 1, 0.5, 60, 44100);
 //        note.printData();
