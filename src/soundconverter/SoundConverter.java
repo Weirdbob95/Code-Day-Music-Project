@@ -324,8 +324,7 @@ public class SoundConverter {
         try {
 
             // Display information about the wav file
-            wavFile.display();
-
+//            wavFile.display();
             // Create a buffer of bufferSize frames
             int numChannels = wavFile.getNumChannels();
             double[] buffer = new double[bufferSize * numChannels];

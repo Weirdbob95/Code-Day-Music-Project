@@ -7,7 +7,6 @@ package editor;
 
 import data.Note;
 import graphics.data.Sprite;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,12 +24,14 @@ public class inputManager {
         this.list = list;
         this.name = name;
         this.topLine = 0;
-
     }
 
     public Sprite recognize(Note n) {
         int pic = n.time;
-        return new Sprite(pic + "");
-
+        if (n.note == -1) {
+            return new Sprite(pic + "rest");
+        } else {
+            return new Sprite(pic + "");
+        }
     }
 }

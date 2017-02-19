@@ -1,15 +1,11 @@
 package soundconverter;
 
 import data.Note;
-import engine.Core;
-import graphics.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import static soundconverter.SoundConverter.jump;
 import static soundconverter.SoundConverter.sampleRate;
-import util.Color4;
-import util.Vec2;
 
 public class MusicCreator {
 
@@ -33,16 +29,16 @@ public class MusicCreator {
                 }
             }
         }
-        double fbt = bestTempo;
-        double fbo = bestOffset;
+//        double fbt = bestTempo;
+//        double fbo = bestOffset;
 
-        System.out.println(bestTempo + "  " + bestOffset);
-        Core.render.onEvent(() -> {
-            for (int i = 1; i < 50; i++) {
-                double x = (fbo + fbt * i) * sampleRate / jump;
-                Graphics2D.drawLine(new Vec2(x, 0).multiply(2), new Vec2(x, 800).multiply(2), Color4.BLUE, 1);
-            }
-        });
+//        System.out.println(bestTempo + "  " + bestOffset);
+//        Core.render.onEvent(() -> {
+//            for (int i = 1; i < 50; i++) {
+//                double x = (fbo + fbt * i) * sampleRate / jump;
+//                Graphics2D.drawLine(new Vec2(x, 0).multiply(2), new Vec2(x, 800).multiply(2), Color4.BLUE, 1);
+//            }
+//        });
         TreeMap<Integer, Integer> pitch = new TreeMap();
         for (Interval i : input) {
             int startTime8 = (int) Math.round((posToTime(i.start) - bestOffset) / bestTempo * 2);
@@ -63,11 +59,11 @@ public class MusicCreator {
                     pitch.remove(middle);
                 }
             }
-            Core.render.onEvent(() -> {
-                double x1 = (startTime8 * fbt / 2 + fbo) * sampleRate / jump;
-                double x2 = (endTime8 * fbt / 2 + fbo) * sampleRate / jump;
-                Graphics2D.drawLine(new Vec2(x1, 10).multiply(2), new Vec2(x2, 10).multiply(2), Color4.RED, 1);
-            });
+//            Core.render.onEvent(() -> {
+//                double x1 = (startTime8 * fbt / 2 + fbo) * sampleRate / jump;
+//                double x2 = (endTime8 * fbt / 2 + fbo) * sampleRate / jump;
+//                Graphics2D.drawLine(new Vec2(x1, 10).multiply(2), new Vec2(x2, 10).multiply(2), Color4.RED, 1);
+//            });
         }
 
         List<Note> r = new ArrayList();
@@ -99,10 +95,9 @@ public class MusicCreator {
             }
         }
 
-        for (Note n : r) {
-            System.out.println("Note: " + n.note + " " + n.time);
-        }
-
+//        for (Note n : r) {
+//            System.out.println("Note: " + n.note + " " + n.time);
+//        }
         return r;
     }
 

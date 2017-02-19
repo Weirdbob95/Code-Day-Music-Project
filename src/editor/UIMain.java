@@ -7,11 +7,17 @@ import graphics.Graphics2D;
 import graphics.Window2D;
 import graphics.data.Sprite;
 import static graphics.loading.FontContainer.add;
+import graphics.loading.SpriteContainer;
 import java.awt.Font;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.lwjgl.input.Keyboard;
 import org.newdawn.slick.Color;
+import soundconverter.MusicCreator;
+import soundconverter.Recorder;
+import static soundconverter.SoundConverter.loadFile;
+import static soundconverter.SoundConverter.result;
 import soundconverter.wavfile.Instrument;
 import soundconverter.wavfile.Piano;
 import util.Color4;
@@ -23,7 +29,7 @@ public class UIMain {
     private static final int SIZE = 500;
     private static final int TEXT_NUMBER = 50;
     public static final int VERTICALPOS = -600;
-    public static List<Note> list;
+    public static List<Note> notesList;
     static int dwSamplePerSec = 44100;
     static int bpm = 60;
 
@@ -37,88 +43,151 @@ public class UIMain {
         //Test fixed note, no edit function, no volume and length
 
         Window2D.viewPos = new Vec2(0, VERTICALPOS);
-        list = new ArrayList<>();
+        notesList = new ArrayList<>();
         Instrument piano = new Piano();
 
-        for (int i = 0; i < 3; i++) {
-            list.add(new Note(piano, 59, 4, 0.5, bpm, dwSamplePerSec));
+        for (int i = 0; i < 30; i++) {
+            notesList.add(new Note(piano, 60, 4, 0.5, bpm, dwSamplePerSec));
         }
 
-        inputManager user = new inputManager(list, "Suite I");
+        inputManager user = new inputManager(notesList, "Suite I");
         userInteraction(user, piano);
         drawState(user);
-        drawExtraLines();
-        Core.run();
-    }
 
-    public static int curPos(int i, int j) {
-        return -100 - i * 150 - 20 * j;
-    }
-
-    public static void drawExtraLines() {
-        Core.render.onEvent(() -> {
-            for (int i = 0; i < list.size(); i++) {
-                Note n = list.get(i);
-                if (n != null) {
-                    int num = n.note;
-                    double xPos = n.pos.x;
-                    double yPos = n.pos.y;
-                    int count = 0;
-                    if (num > 59) {
-                        count = (num - 58) / 2;
-                        for (int x = 0; x < count; x++) {
-                            Graphics2D.drawLine(new Vec2(xPos - 15, -80 - (i / 10) * 150 + x * 20), new Vec2(xPos + 15, -80 - (i / 10) * 150 + x * 20), Color4.BLACK, 2);
-                        }
-                    } else if (num < 49) {
-                        count = (52 - num) / 2;
-                        for (int x = 0; x < count; x++) {
-                            Graphics2D.drawLine(new Vec2(xPos - 15, -180 + (i / 10) * 150 - x * 20), new Vec2(xPos + 15, -180 + (i / 10) * 150 - x * 20), Color4.BLACK, 2);
-                        }
-                    }
+        Recorder r = new Recorder();
+        Mutable<Boolean> recording = new Mutable(false);
+        Input.whenKey(Keyboard.KEY_SPACE, true).onEvent(() -> {
+            if (!recording.o) {
+                try {
+                    r.beginRecording(new File("sounds/recording"));
+                    recording.o = true;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            } else {
+                r.endRecording();
+                loadFile("sounds/recording");
+                notesList = MusicCreator.toNoteList(result);
+                recording.o = false;
             }
         });
+
+        Core.run();
     }
 
     public static void drawState(inputManager user) {
         Core.render.onEvent(() -> {
 
+            // Draw header
             Graphics2D.drawText(user.name, "Font", new Vec2(0, -5), Color.black);
             new Sprite("piano").draw(new Vec2(-SIZE + 40, 5), 0);
             new Sprite("trumpet").draw(new Vec2(-SIZE + 160, 5), 0);
             new Sprite("pause").draw(new Vec2(SIZE - 20, 5), 0);
             new Sprite("start").draw(new Vec2(SIZE - 140, 5), 0);
-            for (int i = 0; i < TEXT_NUMBER; i++) {
 
-                for (int j = 0; j < 5; j++) {
-                    Graphics2D.drawLine(new Vec2(-SIZE, curPos(i, j)),
-                            new Vec2(SIZE, curPos(i, j)), Color4.BLACK, 2);
+            int noteToDraw = 0;
 
+            for (int i = 0;; i++) {
+
+                if (noteToDraw >= notesList.size()) {
+                    break;
                 }
-                new Sprite("G").draw(new Vec2(-SIZE, -135 - i * 150), 0);
-                int p = 0;
 
-                for (p = 0; p < 10; p++) {//change the positions of each pic
-                    if (10 * i + p < user.list.size()) {
-                        int xPos = -300 + p * 80;
+                // Draw staff lines
+                int staffTop = -100 - i * 250;
+                for (int j = 0; j < 5; j++) {
+                    int y = staffTop - 20 * j;
+                    Graphics2D.drawLine(new Vec2(-SIZE, y), new Vec2(SIZE, y), Color4.BLACK, 2);
+                }
+                // Draw Treble clef symbol
+                new Sprite("G").draw(new Vec2(-SIZE + 30, -35 + staffTop), 0);
 
-                        int yPos = 10 * (user.list.get(10 * i + p).note - 59) - i * 150 - 92;
-                        if (user.list.get(10 * i + p).time != 1) {
-                            yPos += 32;
-                        }
-                        list.get(10 * i + p).pos = new Vec2(xPos, yPos);
-                        user.recognize(user.list.get(10 * i + p)).draw(new Vec2(xPos, yPos), 0);
+                // Draw notes
+                int x = -350;
+                while (true) {
+                    if (noteToDraw >= notesList.size()) {
+                        break;
                     }
+                    Note n = notesList.get(noteToDraw);
+                    int widthRequired = 60;
+//                    if (isSharp(n.note)) {
+//                        widthRequired += 10;
+//                    }
+                    int y = 10 * noteHeight(n.note) - 72 + staffTop;
+                    if (x + widthRequired >= SIZE) {
+                        break;
+                    }
+                    n.pos = new Vec2(x, y);
+                    if (isSharp(n.note)) {
+                        user.recognize(n).draw(n.pos.add(new Vec2(10, 0)), 0);
+                        Graphics2D.drawSprite(SpriteContainer.loadSprite("sharp"), n.pos.add(new Vec2(-10, -10)), new Vec2(1), 0, Color4.WHITE);
+                    } else {
+                        user.recognize(n).draw(n.pos, 0);
+                    }
+                    // Draw extra staff lines
+                    if (noteHeight(n.note) > 11) {
+                        int count = noteHeight(n.note) / 2 - 5;
+                        for (int j = 0; j < count; j++) {
+                            int lineY = staffTop + 20 + j * 20;
+                            Graphics2D.drawLine(new Vec2(n.pos.x - 15, lineY), new Vec2(n.pos.x + widthRequired - 45, lineY), Color4.BLACK, 2);
+                        }
+                    } else if (noteHeight(n.note) <= 0) {
+                        int count = -noteHeight(n.note) / 2 + 1;
+                        for (int j = 0; j < count; j++) {
+                            int lineY = staffTop - 100 - j * 20;
+                            Graphics2D.drawLine(new Vec2(n.pos.x - 15, lineY), new Vec2(n.pos.x + widthRequired - 45, lineY), Color4.BLACK, 2);
+                        }
+                    }
+                    x += widthRequired;
+                    noteToDraw++;
                 }
             }
         });
     }
 
+    public static boolean isSharp(int note) {
+        switch (note % 12) {
+            case 1:
+            case 3:
+            case 6:
+            case 8:
+            case 10:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static int noteHeight(int note) {
+        if (note == -1) {
+            return 3;
+        }
+        int noteHeight = 0;
+        if (note >= 60) {
+            for (int i = 1; i <= note - 60; i++) {
+                if (!isSharp(i)) {
+                    noteHeight++;
+                }
+            }
+        } else if (note < 60) {
+            for (int i = note + 1; i <= 60; i++) {
+                if (!isSharp(i)) {
+                    noteHeight--;
+                }
+            }
+        }
+        return noteHeight;
+    }
+
+    public static boolean isValidSelection(int selected) {
+        return selected >= 0 && selected < notesList.size();
+    }
+
     public static void userInteraction(inputManager user, Instrument instru) {
-        Mutable<Integer> number = new Mutable(0);
+        Mutable<Integer> selected = new Mutable(0);
         Input.mouseWheel.forEach(x -> {
             if (x < 0) {
-                if ((-user.list.size() / 10 + 3) * 150 - 50 < Window2D.viewPos.y) {
+                if ((-notesList.size() / 10 + 3) * 150 - 50 < Window2D.viewPos.y) {
                     Window2D.viewPos = Window2D.viewPos.add(new Vec2(0, -50));
                 }
             }
@@ -130,62 +199,80 @@ public class UIMain {
         });
         // Draws a red box around the selected note
         Core.render.onEvent(() -> {
-            if (number.o < user.list.size()) {
-                Graphics2D.fillRect(list.get(number.o).pos.subtract(new Vec2(30, 60)), new Vec2(60, 120), Color4.RED.withA(.1));
+            if (isValidSelection(selected.o)) {
+                Graphics2D.fillRect(notesList.get(selected.o).pos.subtract(new Vec2(30, 60)), new Vec2(60, 120), Color4.RED.withA(.1));
             }
         });
         //inaccuracy
         Input.whenMouse(0, true).onEvent(() -> {
             Vec2 click = Input.getMouse();
 
-            for (int i = 0; i < list.size(); i++) {
-                if (click.x <= list.get(i).pos.x + 30 && click.x >= list.get(i).pos.x - 30
-                        && click.y <= list.get(i).pos.y + 60 && click.y >= list.get(i).pos.y - 60) {
-                    number.o = i;
+            for (int i = 0; i < notesList.size(); i++) {
+                if (click.x <= notesList.get(i).pos.x + 30 && click.x >= notesList.get(i).pos.x - 30
+                        && click.y <= notesList.get(i).pos.y + 60 && click.y >= notesList.get(i).pos.y - 60) {
+                    selected.o = i;
                 }
             }
         });
 
         Input.whenKey(Keyboard.KEY_DOWN, true).onEvent(() -> {
-            if (number.o < user.list.size()) {
-                user.list.get(number.o).note -= 1;
+            if (isValidSelection(selected.o)) {
+                if (notesList.get(selected.o).note != -1) {
+                    notesList.get(selected.o).note -= 1;
+                }
             }
         });
         Input.whenKey(Keyboard.KEY_UP, true).onEvent(() -> {
-            if (number.o < user.list.size()) {
-                user.list.get(number.o).note += 1;
+            if (isValidSelection(selected.o)) {
+                if (notesList.get(selected.o).note != -1) {
+                    notesList.get(selected.o).note += 1;
+                }
             }
         });
-
+        Input.whenKey(Keyboard.KEY_LEFT, true).onEvent(() -> {
+            selected.o--;
+        });
+        Input.whenKey(Keyboard.KEY_RIGHT, true).onEvent(() -> {
+            selected.o++;
+        });
+        Input.whenKey(Keyboard.KEY_R, true).onEvent(() -> {
+            if (isValidSelection(selected.o)) {
+                if (notesList.get(selected.o).note != -1) {
+                    notesList.get(selected.o).note = -1;
+                } else {
+                    notesList.get(selected.o).note = 60;
+                }
+            }
+        });
         Input.whenKey(Keyboard.KEY_BACK, true).onEvent(() -> {
-            if (number.o < user.list.size()) {
-                user.list.remove((int) number.o);
+            if (isValidSelection(selected.o)) {
+                notesList.remove((int) selected.o);
             }
         });
         Input.whenKey(Keyboard.KEY_1, true).onEvent(() -> {
-            if (number.o < user.list.size()) {
-                user.list.add((int) number.o, new Note(instru, 59, 1, 0, bpm, dwSamplePerSec));
+            if (isValidSelection(selected.o)) {
+                notesList.add((int) selected.o, new Note(instru, 60, 1, 0, bpm, dwSamplePerSec));
             }
         });
         Input.whenKey(Keyboard.KEY_2, true).onEvent(() -> {
-            if (number.o < user.list.size()) {
-                user.list.add((int) number.o, new Note(instru, 59, 2, 0, bpm, dwSamplePerSec));
+            if (isValidSelection(selected.o)) {
+                notesList.add((int) selected.o, new Note(instru, 60, 2, 0, bpm, dwSamplePerSec));
             }
 
         });
         Input.whenKey(Keyboard.KEY_4, true).onEvent(() -> {
-            if (number.o < user.list.size()) {
-                user.list.add((int) number.o, new Note(instru, 59, 4, 0, bpm, dwSamplePerSec));
+            if (isValidSelection(selected.o)) {
+                notesList.add((int) selected.o, new Note(instru, 60, 4, 0, bpm, dwSamplePerSec));
             }
         });
         Input.whenKey(Keyboard.KEY_8, true).onEvent(() -> {
-            if (number.o < user.list.size()) {
-                user.list.add((int) number.o, new Note(instru, 59, 8, 0, bpm, dwSamplePerSec));
+            if (isValidSelection(selected.o)) {
+                notesList.add((int) selected.o, new Note(instru, 60, 8, 0, bpm, dwSamplePerSec));
             }
         });
         Input.whenKey(Keyboard.KEY_0, true).onEvent(() -> {
-            if (number.o < user.list.size()) {
-                user.list.add((int) number.o, new Note(instru, 59, 16, 0, bpm, dwSamplePerSec));
+            if (isValidSelection(selected.o)) {
+                notesList.add((int) selected.o, new Note(instru, 60, 16, 0, bpm, dwSamplePerSec));
             }
         });
 
