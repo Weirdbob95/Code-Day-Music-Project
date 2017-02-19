@@ -7,6 +7,7 @@ package editor;
 
 import data.Note;
 import graphics.data.Sprite;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,21 +15,23 @@ import java.util.List;
  * @author liruiwang
  */
 public class inputManager {
-    private List<Note> list;
-    private String pitch;
-    private String name;
-    private int topLine;
-    public inputManager (List<Note> list, String pitch, String name) {
+
+    public List<Note> list;
+    public String pitch;
+    public String name;
+    public int topLine;
+
+    public inputManager(List<Note> list, String pitch, String name) {
         this.list = list;
         this.pitch = pitch;
-        this.name = name;  
+        this.name = name;
         this.topLine = 0;
-        
+
     }
-        public Sprite recognize(Note n) {
-            int pic = n.note - 60;
-            //if (pic == 1)
-            //else if (pic
-            return new Sprite("note1");
+
+    public Sprite recognize(Note n) {
+        int pic = n.time;
+        return new Sprite(pic + "");
+
     }
 }

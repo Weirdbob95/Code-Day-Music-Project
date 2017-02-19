@@ -11,6 +11,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import org.lwjgl.input.Keyboard;
 import soundconverter.fft.Complex;
 import soundconverter.fft.FFT;
@@ -33,6 +36,8 @@ public class SoundConverter {
         // Draw the fft
         fft = new Framebuffer(new TextureAttachment());
         double pixelSize = 2;
+//        loadFile("sounds/classical_solo.wav");
+//        drawFFT(fft, pixelSize);
 
         Mutable<Long> initialTime = new Mutable(System.currentTimeMillis());
 
@@ -55,6 +60,7 @@ public class SoundConverter {
             r.endRecording();
             loadFile("sounds/recording");
             drawFFT(fft, pixelSize);
+            playFile("sounds/recording");
             initialTime.o = System.currentTimeMillis();
             System.out.println("Recording finished");
         });
@@ -74,15 +80,20 @@ public class SoundConverter {
         try {
             WavFile wavFile = WavFile.openWavFile(new File(filename));
             sampleRate = (int) wavFile.getSampleRate();
-            int bufferSize = 1024;
-            jump = 256;
+            int bufferSize = 1024 * 4;
+            jump = 256 * 4;
             results = runFFT(wavFile, bufferSize, jump);
-//
-//            // Play the sound
-//            AudioInputStream ais = AudioSystem.getAudioInputStream(new File("sounds/test.wav"));
-//            Clip clip = AudioSystem.getClip();
-//            clip.open(ais);
-//            clip.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void playFile(String filename) {
+        try {
+            AudioInputStream ais = AudioSystem.getAudioInputStream(new File(filename));
+            Clip clip = AudioSystem.getClip();
+            clip.open(ais);
+            clip.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -106,9 +117,11 @@ public class SoundConverter {
                 }
 
                 // Pitch detector 1
+                double total = 0;
                 for (int y = 0; y < results[x].length / 2; y++) {
                     if (results[x][y] * 4 > maxVal) {
                         Graphics2D.fillRect(new Vec2(x, y).multiply(pixelSize), new Vec2(pixelSize), Color4.GREEN);
+                        total += results[x][y];
                     }
                 }
                 // Pitch detector 2
@@ -119,6 +132,19 @@ public class SoundConverter {
                     }
                 }
                 Graphics2D.fillRect(new Vec2(x, best).multiply(pixelSize), new Vec2(pixelSize), Color4.RED);
+                // Pitch detector 3
+                if (total != 0) {
+                    double runningTotal = 0;
+                    for (int y = 0; y < results[x].length / 2; y++) {
+                        if (results[x][y] * 4 > maxVal) {
+                            runningTotal += results[x][y];
+                            if (runningTotal > total / 2) {
+                                Graphics2D.fillRect(new Vec2(x, best).multiply(pixelSize), new Vec2(pixelSize), Color4.YELLOW);
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         });
     }
