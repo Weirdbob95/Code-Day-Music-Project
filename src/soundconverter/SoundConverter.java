@@ -30,6 +30,7 @@ public class SoundConverter {
     public static List<Integer>[] notes = new List[0];
     public static Framebuffer fft;
     public static int sampleRate, bufferSize, jump;
+    public static List<Interval> result = new ArrayList();
 
     public static void main(String[] args) {
 
@@ -37,9 +38,7 @@ public class SoundConverter {
 
         // Draw the fft
         fft = new Framebuffer(new TextureAttachment());
-        double pixelSize = 4;
-//        loadFile("sounds/classical_solo.wav");
-//        drawFFT(fft, pixelSize);
+        double pixelSize = 6;
 
         Mutable<Long> initialTime = new Mutable(System.currentTimeMillis());
 
@@ -67,6 +66,13 @@ public class SoundConverter {
             System.out.println("Recording finished");
         });
 
+        Input.whenKey(Keyboard.KEY_T, true).onEvent(() -> {
+            loadFile("sounds/test.wav");
+            drawFFT(fft, pixelSize);
+            playFile("sounds/test.wav");
+            initialTime.o = System.currentTimeMillis();
+        });
+
         Core.render.onEvent(() -> {
             fft.render();
             Camera.setProjection2D(Window2D.LL(), Window2D.UR());
@@ -86,6 +92,7 @@ public class SoundConverter {
             jump = 256 * 4;
             results = runFFT(wavFile, bufferSize, jump);
             process();
+            smooth();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -107,72 +114,30 @@ public class SoundConverter {
         fft.with(() -> {
             Camera.setProjection2D(Window2D.LL(), Window2D.UR());
 
-            double maxVal = 0;
-            for (double[] result : results) {
-                for (int y = 0; y < result.length; y++) {
-                    maxVal = Math.max(maxVal, result[y]);
-                }
-            }
-
             for (int x = 0; x < results.length; x++) {
+
+                // Draw the amplitudes
                 for (int y = 0; y < results[x].length; y++) {
-                    Graphics2D.fillRect(new Vec2(x, y).multiply(pixelSize), new Vec2(pixelSize), Color4.gray(Math.pow(results[x][y] / maxVal, .5)));
+                    Graphics2D.fillRect(new Vec2(x, y).multiply(pixelSize), new Vec2(pixelSize), Color4.gray(results[x][y]));
                 }
 
-                // Pitch detector 1
-                double total = 0;
-                for (int y = 0; y < results[x].length; y++) {
-                    if (results[x][y] * 4 > maxVal) {
-                        total += results[x][y];
-                    }
-                }
-                if (total != 0) {
-                    double runningTotal = 0;
-                    for (int y = 0; y < results[x].length; y++) {
-                        if (results[x][y] * 4 > maxVal) {
-                            runningTotal += results[x][y];
-                            if (runningTotal > total / 2) {
-                                Graphics2D.fillRect(new Vec2(x, y).multiply(pixelSize), new Vec2(pixelSize), Color4.YELLOW);
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                // Pitch detector 2
-                int best = 0;
-                for (int y = 0; y < confidence[x].length; y++) {
-                    if (confidence[x][y] > confidence[x][best]) {
-                        best = y;
-                    }
-                    if (confidence[x][y] > .5) {
-                        Graphics2D.fillRect(new Vec2(x, (double) noteToFrequency(best / 10.) * bufferSize / sampleRate).multiply(pixelSize), new Vec2(pixelSize), Color4.RED.withA(.1));
-                    } else if (confidence[x][y] > .1) {
-                        Graphics2D.fillRect(new Vec2(x, (double) noteToFrequency(best / 10.) * bufferSize / sampleRate).multiply(pixelSize), new Vec2(pixelSize), Color4.BLUE.withA(.1));
-                    }
-                }
-                if (confidence[x][best] > .05) {
+                // Pitch detector
+                int best = max(confidence[x]);
+                if (confidence[x][best] > .2) {
                     Graphics2D.fillRect(new Vec2(x, (double) noteToFrequency(best / 10.) * bufferSize / sampleRate).multiply(pixelSize), new Vec2(pixelSize), Color4.RED);
                 } else {
                     Graphics2D.fillRect(new Vec2(x, (double) noteToFrequency(best / 10.) * bufferSize / sampleRate).multiply(pixelSize), new Vec2(pixelSize), Color4.BLUE);
                 }
-
-                // Pitch detector 3
                 for (int y : notes[x]) {
                     Graphics2D.fillRect(new Vec2(x, (double) noteToFrequency(y / 10.) * bufferSize / sampleRate).multiply(pixelSize), new Vec2(pixelSize), Color4.GREEN);
+                    Graphics2D.fillRect(new Vec2(x, y / 10.).multiply(pixelSize), new Vec2(pixelSize), Color4.YELLOW);
                 }
             }
-        });
-    }
 
-    private static int findMax(double[] a) {
-        int max = 0;
-        for (int i = 0; i < a.length; i++) {
-            if (a[i] > a[max]) {
-                max = i;
+            for (Interval i : result) {
+                i.draw(pixelSize);
             }
-        }
-        return max;
+        });
     }
 
     public static void process() {
@@ -191,7 +156,7 @@ public class SoundConverter {
 //        }
 //        results = bins;
         // Blur
-        int blurSize = 5;
+        int blurSize = 0;
         double blurFactor = 10;
         double[][] r = new double[results.length][1000];
         for (int x = 0; x < r.length; x++) {
@@ -215,7 +180,7 @@ public class SoundConverter {
         double maxVal = 0;
         for (int x = 0; x < results.length; x++) {
             for (int y = 0; y < results[x].length; y++) {
-                results[x][y] = Math.pow(results[x][y], 2);
+                results[x][y] = Math.pow(results[x][y], 1);
                 maxVal = Math.max(maxVal, results[x][y]);
             }
         }
@@ -226,49 +191,111 @@ public class SoundConverter {
             }
         }
 
-        // Confidence
+//        // Fake a pitch
+//        for (int x = 0; x < results.length; x++) {
+//            results[x][50] = .75;
+//        }
+        // Find notes
         confidence = new double[results.length][1280];
+        notes = new List[results.length];
         for (int x = 0; x < results.length; x++) {
-            for (int y = 0; y < results[0].length; y++) {
-                double baseFreq = noteToFrequency(y / 10.);
-                for (int i = 1; i < 25; i++) {
-                    int pos = (int) (baseFreq * i * bufferSize / sampleRate);
-                    if (pos < results[x].length) {
-                        confidence[x][y] += results[x][pos] / Math.pow(1.1, i);
+
+            double[] resultsCopy = results[x].clone();
+            notes[x] = new ArrayList();
+
+            while (true) {
+
+                confidence[x] = new double[confidence[x].length];
+                for (int y = 0; y < results[0].length; y++) {
+                    double baseFreq = noteToFrequency(y / 10.);
+                    for (int i = 1; i < 10; i++) {
+                        int pos = (int) (baseFreq * i * bufferSize / sampleRate);
+                        if (pos < results[x].length) {
+                            confidence[x][y] += resultsCopy[pos] / Math.pow(1.1, i);
+                        }
+                    }
+                }
+
+                int best = max(confidence[x]);
+                if (confidence[x][best] < .2) {
+                    break;
+                }
+                notes[x].add(best);
+                for (int i = 0; i < 10; i++) {
+                    for (int j = -3; j <= 3; j++) {
+                        int pos = (int) (noteToFrequency(best / 10.) * i * bufferSize / sampleRate) + j;
+                        if (pos >= 0 && pos < results[x].length) {
+                            resultsCopy[pos] *= i * i / 100;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void smooth() {
+
+        result = new ArrayList();
+
+        Interval active = null;
+        for (int x = 0; x < results.length + 5; x++) {
+            if (active != null && x > active.end + 2) {
+                if (active.end > active.start + 5) {
+                    result.add(active);
+                }
+                active = null;
+            }
+            if (x < results.length && !notes[x].isEmpty()) {
+                int note = notes[x].get(0);
+                if (active == null) {
+                    active = new Interval(x, x, note);
+                } else {
+                    if (Math.abs(note - active.freq) < 20) {
+                        active.end = x;
+                        active.freq = ((active.end - active.start + 1) * active.freq + note) / (active.end - active.start + 2);
                     }
                 }
             }
         }
 
-        // Detect pitches
-        notes = new List[results.length];
-        for (int x = 0; x < results.length; x++) {
-            notes[x] = new ArrayList();
-            while (true) {
-                int best = findMax(confidence[x]);
-                if (confidence[x][best] < .05) {
-                    break;
-                }
-                notes[x].add(best);
-                break;
-//                for (int i = 1; i < 10; i++) {
-//                    for (int j = -10; j <= 10; j++) {
-//                        int pos = (int) (best + Math.log(i) * 120 / Math.log(2) + j);
-//                        if (pos < confidence[x].length && pos >= 0) {
-//                            confidence[x][pos] = 0;
+//        int threshold = 10, window = 5;
+//        int start = 0, end = 0;
+//        List<Integer> soundList = new ArrayList();
+//        int[] counts = new int[notes.length];
+//        for (int i = 0; i < notes.length; i++) {
+//            for (int n : notes[i]) {
+//                for (int j = 0; j < window && i + j < notes.length; j++) {
+//                    for (int m : notes[i + j]) {
+//                        if (Math.abs(n - m) < threshold) {
+//                            counts[i]++;
 //                        }
 //                    }
 //                }
-//                for (int i = 1; i < 10; i++) {
-//                    for (int j = -10; j <= 10; j++) {
-//                        int pos = (int) (best - Math.log(i) * 120 / Math.log(2) + j);
-//                        if (pos < confidence[x].length && pos >= 0) {
-//                            confidence[x][pos] = 0;
-//                        }
-//                    }
+//            }
+//        }
+//
+//        result = new ArrayList();
+//        for (int i = 0; i < notes.length; i++) {
+//            int count = 0;
+//            for (int j = 0; j < window && i + j < notes.length; j++) {
+//                if (counts[i + j] >= Math.min(window - 3, notes.length - i - j - 3)) {
+//                    count++;
 //                }
-            }
-        }
+//            }
+//            if (count >= window - 3 && !notes[i].isEmpty()) {
+//                end++;
+//                if (counts[i] > window - 3) {
+//                    soundList.add(notes[i].get(0));
+//                }
+//            } else {
+//                if (soundList.size() >= 3) {
+//                    result.add(new Interval(start, end, mean(soundList)));
+//                }
+//                start = end = i + 1;
+//                soundList = new ArrayList();
+//            }
+//        }
+//        System.out.println(result);
     }
 
     public static double[][] runFFT(WavFile wavFile, int bufferSize, int jump) {
@@ -324,7 +351,21 @@ public class SoundConverter {
         return Math.pow(2, (note - 49) / 12.) * 440;
     }
 
-    public static double fftToFrequency(double pos) {
-        return pos * sampleRate / bufferSize;
+    private static int max(double[] a) {
+        int max = 0;
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] > a[max]) {
+                max = i;
+            }
+        }
+        return max;
+    }
+
+    public static double mean(List<Integer> a) {
+        double sum = 0;
+        for (int i : a) {
+            sum += i;
+        }
+        return sum / a.size();
     }
 }
