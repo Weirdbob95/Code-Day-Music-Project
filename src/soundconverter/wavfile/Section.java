@@ -33,27 +33,62 @@ public class Section implements Frame {
             throw new IllegalStateException("empty section!");
         }
 
-        float[] firstNote = notes.get(0).toData32();
+        float[] temp = notes.get(0).toData32();
 
-        float[] buffer = new float[firstNote.length];
+        float[] buffer = new float[temp.length];
 
         for (int i = 0; i < buffer.length; i++)
-            buffer[i] = firstNote[i];
+            buffer[i] = temp[i];
 
         for (int i = 1; i < notes.size(); i++) {
+            temp = notes.get(i).toData32();
             for (int j = 0; j < buffer.length; j++)
-                buffer[j] += firstNote[j];
+                buffer[j] += temp[j];
         }
 
         return buffer;
     }
 
-    public int[] toData16() {
-        throw new IllegalStateException("not implemented yet!");
+    public short[] toData16() {
+        if (notes.isEmpty()) {
+            throw new IllegalStateException("empty section!");
+        }
+
+        short[] temp = notes.get(0).toData16();
+
+        short[] buffer = new short[temp.length];
+
+        for (int i = 0; i < buffer.length; i++)
+            buffer[i] = temp[i];
+
+        for (int i = 1; i < notes.size(); i++) {
+            temp = notes.get(i).toData16();
+            for (int j = 0; j < buffer.length; j++)
+                buffer[j] += temp[j];
+        }
+
+        return buffer;
     }
 
-    public short[] toData8() {
-        throw new IllegalStateException("not implemented yet!");
+    public byte[] toData8() {
+        if (notes.isEmpty()) {
+            throw new IllegalStateException("empty section!");
+        }
+
+        byte[] temp = notes.get(0).toData8();
+
+        byte[] buffer = new byte[temp.length];
+
+        for (int i = 0; i < buffer.length; i++)
+            buffer[i] = temp[i];
+
+        for (int i = 1; i < notes.size(); i++) {
+            temp = notes.get(i).toData8();
+            for (int j = 0; j < buffer.length; j++)
+                buffer[j] += temp[j];
+        }
+
+        return buffer;
     }
 
     public String toString() {

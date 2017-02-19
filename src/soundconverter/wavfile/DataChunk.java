@@ -14,7 +14,7 @@ public abstract class DataChunk {
     protected static final int sGroupID = 0x64617461;
     protected long dwChunkSize;
 
-    protected ArrayList<Float> fdata;
+//    protected ArrayList<Float> fdata;
     protected ArrayList<Byte>  data;
 
     public abstract void addFrame(Frame frame);

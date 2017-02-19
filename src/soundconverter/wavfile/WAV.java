@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class WAV {
-    public DataChunk32 dataChunk;
+    public DataChunk dataChunk;
     public Header    header;
     public Format    format;
 
@@ -23,9 +23,21 @@ public class WAV {
     // given a list of notes, construct the data chunk, headers and format
     public WAV(List<Frame> frames, int wFormatTag, int wChannels, long
             dwSamplesPerSec, int wBitsPerSample) {
-        this.dataChunk = new DataChunk32(frames);
+
+        if (wBitsPerSample == 32) {
+            this.dataChunk = new DataChunk32(frames);
+            this.header    = new Header(44 + ((DataChunk32)this.dataChunk).fdata.size() * 4 - 8);
+        } else if (wBitsPerSample == 16) {
+            this.dataChunk = new DataChunk16(frames);
+            this.header    = new Header(44 + ((DataChunk16)this.dataChunk).fdata.size() * 2 - 8);
+        } else if (wBitsPerSample == 8) {
+            this.dataChunk = new DataChunk8(frames);
+            this.header    = new Header(44 + ((DataChunk8)this.dataChunk).fdata.size() - 8);
+        } else {
+            throw new IllegalArgumentException("wrong wBitsPerSample");
+        }
+
         this.format    = new Format(wFormatTag, wChannels,dwSamplesPerSec,wBitsPerSample);
-        this.header    = new Header(44 + this.dataChunk.fdata.size() * 4 - 8);
     }
 
     // for debug
@@ -71,7 +83,7 @@ public class WAV {
     }
 
     public static void genWAE(List<Frame> frames, String filename, int dwSamplePerSec) {
-        WAV wav = new WAV(frames,1, 1, dwSamplePerSec,32);
+        WAV wav = new WAV(frames,1, 1, dwSamplePerSec,16);
 
         wav.printHeader();
         wav.printFormat();
@@ -90,6 +102,12 @@ public class WAV {
             System.out.println("\tadding..\n" + note);
             frames.add(note);
         }
+
+//        for (int i = 0; i < 10; i++) {
+//            note = new Note(piano, -1, 4, 0.5, 60, 44100);
+//            System.out.println("\tadding..\n" + note);
+//            frames.add(note);
+//        }
 
         genWAE(frames, "mywave.wav", 44100);
     }

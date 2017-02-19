@@ -31,9 +31,41 @@ public class Note implements Frame {
         this.dwSamplePerSec = dwSamplePerSec;
     }
 
+    public short[] toData16() {
+        if (this.note == -1) {
+            int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
+            short[] data = new short[sampleDataSize];
+
+            for (int i = 0; i < sampleDataSize; i++) data[i] = 0;
+
+            return data;
+        }
+        return toData16(instrument.freq(this.note));
+    }
+
 
     public float[] toData32() {
+        if (this.note == -1) {
+            int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
+            float[] data = new float[sampleDataSize];
+
+            for (int i = 0; i < sampleDataSize; i++) data[i] = 0;
+
+            return data;
+        }
         return toData32(instrument.freq(this.note));
+    }
+
+    public byte[] toData8() {
+        if (this.note == -1) {
+            int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
+            byte[] data = new byte[sampleDataSize];
+
+            for (int i = 0; i < sampleDataSize; i++) data[i] = 0;
+
+            return data;
+        }
+        return toData8(instrument.freq(this.note));
     }
 
     private float mix(double t, int i) {
@@ -66,12 +98,42 @@ public class Note implements Frame {
         return data;
     }
 
-    public int[] toData16() {
-        throw new IllegalStateException("not implemented yet!");
+    public short[] toData16(double freq) {
+        int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
+        System.out.println("sample size : " + sampleDataSize);
+
+        short[] data = new short[sampleDataSize];
+
+        double amplitude = this.volume * Float.MAX_VALUE;
+
+        // period
+        double t = (Math.PI * freq * 2) / dwSamplePerSec;
+
+        for (int i = 0; i < sampleDataSize; i++) {
+            data[i] = (short) (amplitude * Math.sin(t * i));
+//            data[i] = (float)(amplitude * mix(i,3));
+        }
+
+        return data;
     }
 
-    public short[] toData8() {
-        throw new IllegalStateException("not implemented yet!");
+    public byte[] toData8(double freq) {
+        int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
+        System.out.println("sample size : " + sampleDataSize);
+
+        byte[] data = new byte[sampleDataSize];
+
+        double amplitude = this.volume * Float.MAX_VALUE;
+
+        // period
+        double t = (Math.PI * freq * 2) / dwSamplePerSec;
+
+        for (int i = 0; i < sampleDataSize; i++) {
+            data[i] = (byte) (amplitude * Math.sin(t * i));
+//            data[i] = (float)(amplitude * mix(i,3));
+        }
+
+        return data;
     }
 
     public String toString() {
