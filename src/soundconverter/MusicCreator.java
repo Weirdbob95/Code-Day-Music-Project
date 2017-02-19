@@ -79,7 +79,8 @@ public class MusicCreator {
                     int pow = (int) Math.pow(2, 3 - i);
                     while (duration >= pow) {
                         duration -= pow;
-                        r.add(new Note(pitch.get(startTime), 8 / pow));
+                        int p = pitch.get(startTime);
+                        r.add(new Note(p == -1 ? -1 : p + 20, 8 / pow));
                     }
                 }
 //                    if (endTime - startTime == 1) {

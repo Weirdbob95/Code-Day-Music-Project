@@ -34,7 +34,7 @@ public class Interval {
     }
 
     public static void main(String[] args) {
-        playFile("mywave.wav");
+        playFile("sounds/music");
         while (true) {
 
         }
