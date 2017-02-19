@@ -1,8 +1,6 @@
 package editor;
 
 import data.Note;
-import soundconverter.wavfile.Instrument;
-import soundconverter.wavfile.Piano;
 import engine.Core;
 import engine.Input;
 import graphics.Graphics2D;
@@ -14,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.lwjgl.input.Keyboard;
 import org.newdawn.slick.Color;
+import soundconverter.wavfile.Instrument;
+import soundconverter.wavfile.Piano;
 import util.Color4;
 import util.Mutable;
 import util.Vec2;
@@ -40,17 +40,14 @@ public class UIMain {
         list = new ArrayList<>();
         Instrument piano = new Piano();
 
-        for (int i = 0; i < 100; i++) {
-
+        for (int i = 0; i < 3; i++) {
             list.add(new Note(piano, 59, 4, 0.5, bpm, dwSamplePerSec));
-
         }
+
         inputManager user = new inputManager(list, "Suite I");
         userInteraction(user, piano);
         drawState(user);
-        for(Note n : list){
-            drawExtraLines(n);
-        }
+        drawExtraLines();
         Core.run();
     }
 
@@ -58,29 +55,31 @@ public class UIMain {
         return -100 - i * 150 - 20 * j;
     }
 
-    public static void drawExtraLines(Note n) {
-        if (n != null) {
-            int num = n.note;
-            double xPos = n.pos.x;
-            double yPos = n.pos.y;
-            int count = 0;
-            if (num > 59) {
-                count = (num - 58) / 2;
-                for (int x = 0; x < count; x++) {
-                    System.out.println(x);
-                    Graphics2D.drawLine(new Vec2(xPos - 15, yPos + x * 10 - 40), new Vec2(xPos + 15, yPos + x * 10 - 40), Color4.BLACK, 5);
-                
+    public static void drawExtraLines() {
+        Core.render.onEvent(() -> {
+            for (int i = 0; i < list.size(); i++) {
+                Note n = list.get(i);
+                if (n != null) {
+                    int num = n.note;
+                    double xPos = n.pos.x;
+                    double yPos = n.pos.y;
+                    int count = 0;
+                    if (num > 59) {
+                        count = (num - 58) / 2;
+                        for (int x = 0; x < count; x++) {
+                            Graphics2D.drawLine(new Vec2(xPos - 15, -80 - (i / 10) * 150 + x * 20), new Vec2(xPos + 15, -80 - (i / 10) * 150 + x * 20), Color4.BLACK, 2);
+                        }
+                    } else if (num < 49) {
+                        count = (52 - num) / 2;
+                        for (int x = 0; x < count; x++) {
+                            Graphics2D.drawLine(new Vec2(xPos - 15, -180 + (i / 10) * 150 - x * 20), new Vec2(xPos + 15, -180 + (i / 10) * 150 - x * 20), Color4.BLACK, 2);
+                        }
+                    }
+                }
             }
-            } else if (num < 49) {
-                count = (52 - num) / 2;
-            }
-            for (int x = 0; x < count; x++) {
-                System.out.println(x);
-                Graphics2D.drawLine(new Vec2(xPos - 15, yPos + x * 10 - 40), new Vec2(xPos + 15, yPos + x * 10 - 40), Color4.BLACK, 5);
-                
-            }
-        }
+        });
     }
+
     public static void drawState(inputManager user) {
         Core.render.onEvent(() -> {
 
@@ -103,12 +102,11 @@ public class UIMain {
                     if (10 * i + p < user.list.size()) {
                         int xPos = -300 + p * 80;
 
-                        int yPos = -10 * (user.list.get(10 * i + p).note - 59) - i * 150 - 92;
+                        int yPos = 10 * (user.list.get(10 * i + p).note - 59) - i * 150 - 92;
                         if (user.list.get(10 * i + p).time != 1) {
                             yPos += 32;
                         }
                         list.get(10 * i + p).pos = new Vec2(xPos, yPos);
-                        //  drawExtraLines(user.list.get(10 * i + p));
                         user.recognize(user.list.get(10 * i + p)).draw(new Vec2(xPos, yPos), 0);
                     }
                 }
@@ -130,12 +128,13 @@ public class UIMain {
                 }
             }
         });
-        //inaccuracy
+        // Draws a red box around the selected note
         Core.render.onEvent(() -> {
-            for (Note n : list) {
-                Graphics2D.drawRect(n.pos.subtract(new Vec2(30, 60)), new Vec2(60, 120), Color4.BLUE);
+            if (number.o < user.list.size()) {
+                Graphics2D.fillRect(list.get(number.o).pos.subtract(new Vec2(30, 60)), new Vec2(60, 120), Color4.RED.withA(.1));
             }
         });
+        //inaccuracy
         Input.whenMouse(0, true).onEvent(() -> {
             Vec2 click = Input.getMouse();
 
@@ -149,12 +148,12 @@ public class UIMain {
 
         Input.whenKey(Keyboard.KEY_DOWN, true).onEvent(() -> {
             if (number.o < user.list.size()) {
-                user.list.get(number.o).note += 1;
+                user.list.get(number.o).note -= 1;
             }
         });
         Input.whenKey(Keyboard.KEY_UP, true).onEvent(() -> {
             if (number.o < user.list.size()) {
-                user.list.get(number.o).note -= 1;
+                user.list.get(number.o).note += 1;
             }
         });
 

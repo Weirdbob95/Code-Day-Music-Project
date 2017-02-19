@@ -10,6 +10,7 @@ import graphics.data.Framebuffer.TextureAttachment;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -17,6 +18,7 @@ import javax.sound.sampled.Clip;
 import org.lwjgl.input.Keyboard;
 import soundconverter.fft.Complex;
 import soundconverter.fft.FFT;
+import soundconverter.wavfile.WAV;
 import soundconverter.wavfile.WavFile;
 import soundconverter.wavfile.WavFileException;
 import util.Color4;
@@ -31,6 +33,8 @@ public class SoundConverter {
     public static Framebuffer fft;
     public static int sampleRate, bufferSize, jump;
     public static List<Interval> result = new ArrayList();
+    public static double[] verticalLength;
+    public static List<Interval> result2 = new ArrayList<Interval>();
 
     public static void main(String[] args) {
 
@@ -38,7 +42,7 @@ public class SoundConverter {
 
         // Draw the fft
         fft = new Framebuffer(new TextureAttachment());
-        double pixelSize = 6;
+        double pixelSize = 2;
 
         Mutable<Long> initialTime = new Mutable(System.currentTimeMillis());
 
@@ -49,21 +53,28 @@ public class SoundConverter {
         Input.whileKeyDown(Keyboard.KEY_D).forEach(dt -> Window2D.viewPos = Window2D.viewPos.add(new Vec2(100 * dt, 0)));
 
         Recorder r = new Recorder();
+        Mutable<Boolean> recording = new Mutable(false);
         Input.whenKey(Keyboard.KEY_SPACE, true).onEvent(() -> {
-            try {
-                r.beginRecording(new File("sounds/recording"));
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (!recording.o) {
+                try {
+                    r.beginRecording(new File("sounds/recording"));
+                    recording.o = true;
+                    System.out.println("Recording started");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                r.endRecording();
+                loadFile("sounds/recording");
+                List music = MusicCreator.toNoteList(result);
+                WAV.genWAE(music, "sounds/music", 44100);
+                drawFFT(fft, pixelSize);
+                playFile("sounds/music");
+                //playFile("sounds/recording");
+                initialTime.o = System.currentTimeMillis();
+                recording.o = false;
+                System.out.println("Recording finished");
             }
-            System.out.println("Recording started");
-        });
-        Input.whenKey(Keyboard.KEY_SPACE, false).onEvent(() -> {
-            r.endRecording();
-            loadFile("sounds/recording");
-            drawFFT(fft, pixelSize);
-            playFile("sounds/recording");
-            initialTime.o = System.currentTimeMillis();
-            System.out.println("Recording finished");
         });
 
         Input.whenKey(Keyboard.KEY_T, true).onEvent(() -> {
@@ -93,6 +104,7 @@ public class SoundConverter {
             results = runFFT(wavFile, bufferSize, jump);
             process();
             smooth();
+            calculateVertically();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -122,15 +134,15 @@ public class SoundConverter {
                 }
 
                 // Pitch detector
-                int best = max(confidence[x]);
-                if (confidence[x][best] > .2) {
-                    Graphics2D.fillRect(new Vec2(x, (double) noteToFrequency(best / 10.) * bufferSize / sampleRate).multiply(pixelSize), new Vec2(pixelSize), Color4.RED);
-                } else {
-                    Graphics2D.fillRect(new Vec2(x, (double) noteToFrequency(best / 10.) * bufferSize / sampleRate).multiply(pixelSize), new Vec2(pixelSize), Color4.BLUE);
-                }
+//                int best = max(confidence[x]);
+//                if (confidence[x][best] > .2) {
+//                    Graphics2D.fillRect(new Vec2(x, (double) noteToFrequency(best / 10.) * bufferSize / sampleRate).multiply(pixelSize), new Vec2(pixelSize), Color4.RED);
+//                } else {
+//                    Graphics2D.fillRect(new Vec2(x, (double) noteToFrequency(best / 10.) * bufferSize / sampleRate).multiply(pixelSize), new Vec2(pixelSize), Color4.BLUE);
+//                }
                 for (int y : notes[x]) {
-                    Graphics2D.fillRect(new Vec2(x, (double) noteToFrequency(y / 10.) * bufferSize / sampleRate).multiply(pixelSize), new Vec2(pixelSize), Color4.GREEN);
-                    Graphics2D.fillRect(new Vec2(x, y / 10.).multiply(pixelSize), new Vec2(pixelSize), Color4.YELLOW);
+                    Graphics2D.fillRect(new Vec2(x, (double) noteToFrequency(y / 10.) * bufferSize / sampleRate).multiply(pixelSize), new Vec2(pixelSize), Color4.GREEN.withA(.5));
+                    Graphics2D.fillRect(new Vec2(x, y / 10.).multiply(pixelSize), new Vec2(pixelSize), Color4.YELLOW.withA(.5));
                 }
             }
 
@@ -257,45 +269,55 @@ public class SoundConverter {
                 }
             }
         }
+    }
 
-//        int threshold = 10, window = 5;
-//        int start = 0, end = 0;
-//        List<Integer> soundList = new ArrayList();
-//        int[] counts = new int[notes.length];
-//        for (int i = 0; i < notes.length; i++) {
-//            for (int n : notes[i]) {
-//                for (int j = 0; j < window && i + j < notes.length; j++) {
-//                    for (int m : notes[i + j]) {
-//                        if (Math.abs(n - m) < threshold) {
-//                            counts[i]++;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        result = new ArrayList();
-//        for (int i = 0; i < notes.length; i++) {
-//            int count = 0;
-//            for (int j = 0; j < window && i + j < notes.length; j++) {
-//                if (counts[i + j] >= Math.min(window - 3, notes.length - i - j - 3)) {
-//                    count++;
-//                }
-//            }
-//            if (count >= window - 3 && !notes[i].isEmpty()) {
-//                end++;
-//                if (counts[i] > window - 3) {
-//                    soundList.add(notes[i].get(0));
-//                }
-//            } else {
-//                if (soundList.size() >= 3) {
-//                    result.add(new Interval(start, end, mean(soundList)));
-//                }
-//                start = end = i + 1;
-//                soundList = new ArrayList();
-//            }
-//        }
-//        System.out.println(result);
+    public static void calculateVertically() {
+        verticalLength = new double[results.length];
+        for (int i = 0; i < results.length; i++) {
+            verticalLength[i] = 0;
+            for (double j : results[i]) {
+                verticalLength[i] += j * j;
+            }
+            verticalLength[i] = Math.pow(verticalLength[i], .5);
+        }
+        smooth2();
+    }
+
+    private static void smooth2() {
+        result2 = new ArrayList();
+
+        Interval active = null;
+        for (int x = 0; x < results.length + 5; x++) {
+            if (active != null && x > active.end + 2) {
+                if (active.end > active.start + 5) {
+                    result2.add(active);
+                }
+                active = null;
+            }
+            if (x < results.length) {
+                double note = verticalLength[x];
+                if (active == null) {
+                    active = new Interval(x, x, note);
+                } else {
+                    if (Math.abs((note - active.freq) / active.freq) < 0.5) {
+                        active.end = x;
+                        active.freq = ((active.end - active.start + 1) * active.freq + note) / (active.end - active.start + 2);
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < result2.size(); i++) {
+            List<Integer> pitches = new ArrayList();
+            for (int x = result2.get(i).start; x <= result2.get(i).end; x++) {
+                pitches.addAll(notes[x]);
+            }
+            if (!pitches.isEmpty()) {
+                Collections.sort(pitches);
+                result2.get(i).freq = pitches.get(pitches.size() / 2);
+            }
+        }
+//        result = result2;
     }
 
     public static double[][] runFFT(WavFile wavFile, int bufferSize, int jump) {
@@ -349,6 +371,10 @@ public class SoundConverter {
 
     public static double noteToFrequency(double note) {
         return Math.pow(2, (note - 49) / 12.) * 440;
+    }
+
+    public static int frequencyToNote(double freq) {
+        return (int) Math.round(Math.log(freq / 440) / Math.log(2) * 12 + 49);
     }
 
     private static int max(double[] a) {
