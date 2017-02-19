@@ -75,9 +75,9 @@ class Header {
     }
 
     public static void main(String[] args) {
-        printBytes(reverse("abcd".getBytes()));
-        Header hdr = new Header(705636L);
-        hdr.printLength();
+//        printBytes(reverse("abcd".getBytes()));
+//        Header hdr = new Header(705636L);
+//        hdr.printLength();
 //        hdr.dwFileLength = Long.MAX_VALUE;
 //        System.out.println(Arrays.toString(hdr.Write()));
 ////        System.out.println(Long.toUnsignedString(hdr.dwFileLength));

@@ -4,6 +4,8 @@ import soundconverter.wavfile.Frame;
 import soundconverter.wavfile.Instrument;
 import soundconverter.wavfile.Piano;
 
+import java.util.Arrays;
+
 // A class that represents a single note. Feel free to change this as needed.
 public class Note implements Frame {
 
@@ -31,39 +33,26 @@ public class Note implements Frame {
         this.dwSamplePerSec = dwSamplePerSec;
     }
 
-    public short[] toData16() {
-        if (this.note == -1) {
-            int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
-            short[] data = new short[sampleDataSize];
-
-            for (int i = 0; i < sampleDataSize; i++) data[i] = 0;
-
-            return data;
-        }
-        return toData16(instrument.freq(this.note));
-    }
-
-
     public float[] toData32() {
         if (this.note == -1) {
             int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
-            float[] data = new float[sampleDataSize];
-
-            for (int i = 0; i < sampleDataSize; i++) data[i] = 0;
-
-            return data;
+            return new float[sampleDataSize];
         }
         return toData32(instrument.freq(this.note));
+    }
+
+    public short[] toData16() {
+        if (this.note == -1) {
+            int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
+            return new short[sampleDataSize];
+        }
+        return toData16(instrument.freq(this.note));
     }
 
     public byte[] toData8() {
         if (this.note == -1) {
             int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
-            byte[] data = new byte[sampleDataSize];
-
-            for (int i = 0; i < sampleDataSize; i++) data[i] = 0;
-
-            return data;
+            return new byte[sampleDataSize];
         }
         return toData8(instrument.freq(this.note));
     }
@@ -82,7 +71,6 @@ public class Note implements Frame {
         int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
         System.out.println("sample size : " + sampleDataSize);
 
-//        System.out.println("sampleDataSize = " + sampleDataSize);
         float[] data = new float[sampleDataSize];
 
         double amplitude = this.volume * Float.MAX_VALUE;
@@ -104,14 +92,13 @@ public class Note implements Frame {
 
         short[] data = new short[sampleDataSize];
 
-        double amplitude = this.volume * Float.MAX_VALUE;
+        double amplitude = this.volume * Short.MAX_VALUE;
 
         // period
         double t = (Math.PI * freq * 2) / dwSamplePerSec;
 
         for (int i = 0; i < sampleDataSize; i++) {
             data[i] = (short) (amplitude * Math.sin(t * i));
-//            data[i] = (float)(amplitude * mix(i,3));
         }
 
         return data;
@@ -123,14 +110,13 @@ public class Note implements Frame {
 
         byte[] data = new byte[sampleDataSize];
 
-        double amplitude = this.volume * Float.MAX_VALUE;
+        double amplitude = this.volume * Byte.MAX_VALUE;
 
         // period
         double t = (Math.PI * freq * 2) / dwSamplePerSec;
 
         for (int i = 0; i < sampleDataSize; i++) {
             data[i] = (byte) (amplitude * Math.sin(t * i));
-//            data[i] = (float)(amplitude * mix(i,3));
         }
 
         return data;
@@ -149,5 +135,6 @@ public class Note implements Frame {
 
     public static void main(String[] args) {
         Note note = new Note(new Piano(), 60, 1, 0.5, 60, 44100);
+        System.out.println(Arrays.toString(note.toData16()));
     }
 }

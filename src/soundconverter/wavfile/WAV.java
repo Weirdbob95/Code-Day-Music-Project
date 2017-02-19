@@ -26,30 +26,19 @@ public class WAV {
 
         if (wBitsPerSample == 32) {
             this.dataChunk = new DataChunk32(frames);
-            this.header    = new Header(44 + ((DataChunk32)this.dataChunk).fdata.size() * 4 - 8);
         } else if (wBitsPerSample == 16) {
             this.dataChunk = new DataChunk16(frames);
-            this.header    = new Header(44 + ((DataChunk16)this.dataChunk).fdata.size() * 2 - 8);
         } else if (wBitsPerSample == 8) {
             this.dataChunk = new DataChunk8(frames);
-            this.header    = new Header(44 + ((DataChunk8)this.dataChunk).fdata.size() - 8);
         } else {
             throw new IllegalArgumentException("wrong wBitsPerSample");
         }
 
+        this.header    = new Header(44 + this.dataChunk.dwChunkSize - 8);
         this.format    = new Format(wFormatTag, wChannels,dwSamplesPerSec,wBitsPerSample);
     }
 
-    // for debug
-    public WAV(int wFormatTag, int wChannels, long dwSamplesPerSec, int wBitsPerSample) {
-        this.dataChunk = new DataChunk32();
-        this.format    = new Format(1, 2, 22100,16);
-        this.header    = new Header(2084);
-    }
-
     public void WriteAll(DataOutputStream out) {
-//        if (data == null)  genData();
-
         try {
             out.write(this.header.Write());
             out.write(this.format.Write());
@@ -82,8 +71,9 @@ public class WAV {
         }
     }
 
-    public static void genWAE(List<Frame> frames, String filename, int dwSamplePerSec) {
-        WAV wav = new WAV(frames,1, 1, dwSamplePerSec,16);
+    public static void genWAE(List<Frame> frames, String filename, int
+            dwSamplePerSec, int bits) {
+        WAV wav = new WAV(frames,1, 1, dwSamplePerSec, bits);
 
         wav.printHeader();
         wav.printFormat();
@@ -109,6 +99,8 @@ public class WAV {
 //            frames.add(note);
 //        }
 
-        genWAE(frames, "mywave.wav", 44100);
+        genWAE(frames, "mywave32.wav", 44100, 32);
+        genWAE(frames, "mywave16.wav", 44100, 16);
+        genWAE(frames, "mywave8.wav", 44100, 8);
     }
 }

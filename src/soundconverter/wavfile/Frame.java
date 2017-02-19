@@ -6,7 +6,7 @@ package soundconverter.wavfile;
 public interface Frame {
 
     float[] toData32();
-    short[]   toData16();
-    byte[] toData8();
+    short[] toData16();
+    byte[]  toData8();
     String  toString();
 }

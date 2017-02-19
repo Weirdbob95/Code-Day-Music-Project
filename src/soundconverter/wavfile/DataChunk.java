@@ -14,17 +14,14 @@ public abstract class DataChunk {
     protected static final int sGroupID = 0x64617461;
     protected long dwChunkSize;
 
-//    protected ArrayList<Float> fdata;
-    protected ArrayList<Byte>  data;
-
     public abstract void addFrame(Frame frame);
 
     public abstract byte[] Write();
 
-    protected byte[] toLE(int num) {
-        ByteBuffer temp = ByteBuffer.allocate(4);
+    protected byte[] toLE(byte num) {
+        ByteBuffer temp = ByteBuffer.allocate(1);
         temp.order(ByteOrder.LITTLE_ENDIAN);
-        temp.putInt(num);
+        temp.put(num);
 
         return temp.array();
     }
@@ -44,6 +41,7 @@ public abstract class DataChunk {
 
         return temp.array();
     }
+
 
     // test size
 //    public static void main(String[] args) {

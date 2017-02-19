@@ -13,7 +13,6 @@ import java.util.List;
 public class DataChunk32 extends DataChunk {
 
     public ArrayList<Float> fdata;
-    public ArrayList<Byte>  data;
 
     public static final float MAX_AMP = Float.MAX_VALUE;
     public static final float MIN_AMP = Float.MIN_VALUE;
@@ -22,7 +21,6 @@ public class DataChunk32 extends DataChunk {
         // initialize the chunk
         this.dwChunkSize = 0;
         this.fdata = new ArrayList<>();
-        this.data = new ArrayList<>();
 
         for (Frame f : frames) {
             addFrame(f);
@@ -32,7 +30,6 @@ public class DataChunk32 extends DataChunk {
     public DataChunk32(Frame frame) {
         this.dwChunkSize = 0;
         this.fdata = new ArrayList<>();
-        this.data  = new ArrayList<>();
 
         addFrame(frame);
     }
@@ -40,7 +37,6 @@ public class DataChunk32 extends DataChunk {
     public DataChunk32() {
         this.dwChunkSize = 0;
         this.fdata = new ArrayList<>();
-        this.data  = new ArrayList<>();
     }
 
     // create a new byte array adding the new frame (note or section)
@@ -51,11 +47,11 @@ public class DataChunk32 extends DataChunk {
         for (int i = 0; i < nfdata.length; i++)
             fdata.add(nfdata[i]);
 
-        this.dwChunkSize = fdata.size();
+        this.dwChunkSize = fdata.size() * 4;
     }
 
     public byte[] Write() {
-        ByteBuffer buffer = ByteBuffer.allocate(8 + fdata.size() * 4);
+        ByteBuffer buffer = ByteBuffer.allocate(8 + (int)this.dwChunkSize);
 
         buffer.putInt(sGroupID);
         buffer.put(toLE((int)dwChunkSize));
