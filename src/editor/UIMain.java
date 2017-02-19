@@ -60,12 +60,12 @@ public class UIMain {
             for(int i = 0; i < result.length; i += notesEachLine){
 	            for(int j = 0; j < notesEachLine; j++){
 	            		Graphics2D.drawSprite(images[result[i * notesEachLine+j].time], 
-	            				new Vec2(iP + j * (pL + 20), iP + i * 150 - result[i].note), new Vec2(1,1), 0, Color4.WHITE);
+	            				new Vec2(iP + j * (pL + 20), iP + i * 150 - (result[i].note - 57) * 10), new Vec2(1,1), 0, Color4.WHITE);
 	            }
             }
             for(int i = result.length - result.length % notesEachLine; i < result.length; i++){
             	Graphics2D.drawSprite(images[result[i].time], 
-         				new Vec2(iP +  i * (pL + 20), iP + result.length / notesEachLine * 150 - result[i].note),
+         				new Vec2(iP +  i * (pL + 20), iP + result.length / notesEachLine * 150 - (result[i].note - 57) * 10),
          				new Vec2(1,1), 0, Color4.WHITE);
             }
         });
