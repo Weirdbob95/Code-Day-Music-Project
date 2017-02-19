@@ -1,12 +1,11 @@
 package data;
 
-
-import soundconverter.wavfile.DataChunk;
+import soundconverter.wavfile.Frame;
 import soundconverter.wavfile.Instrument;
 import soundconverter.wavfile.Piano;
 
 // A class that represents a single note. Feel free to change this as needed.
-public class Note {
+public class Note implements Frame {
 
     public int bpm;
     public int note; // 60 is middle C, 61 is C-sharp, 62 is D, 63 is D-sharp, 64 is E, 65 is F, etc
@@ -19,9 +18,11 @@ public class Note {
     private float maxAmp32 = Float.MAX_VALUE;
     private int dwSamplePerSec;
 
-    public Note(Instrument instrument, int note, int time, double volume, int
-            bpm, int
-            dwSamplePerSec) {
+    public Note(int note, int time) {
+        this(new Piano(), note, time, 1, 60, 44100);
+    }
+
+    public Note(Instrument instrument, int note, int time, double volume, int bpm, int dwSamplePerSec) {
         this.instrument = instrument;
         this.note = note;
         this.time = time;
@@ -30,16 +31,50 @@ public class Note {
         this.dwSamplePerSec = dwSamplePerSec;
     }
 
+    public short[] toData16() {
+        if (this.note == -1) {
+            int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
+            short[] data = new short[sampleDataSize];
+
+            for (int i = 0; i < sampleDataSize; i++) data[i] = 0;
+
+            return data;
+        }
+        return toData16(instrument.freq(this.note));
+    }
+
+
     public float[] toData32() {
+        if (this.note == -1) {
+            int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
+            float[] data = new float[sampleDataSize];
+
+            for (int i = 0; i < sampleDataSize; i++) data[i] = 0;
+
+            return data;
+        }
         return toData32(instrument.freq(this.note));
+    }
+
+    public byte[] toData8() {
+        if (this.note == -1) {
+            int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
+            byte[] data = new byte[sampleDataSize];
+
+            for (int i = 0; i < sampleDataSize; i++) data[i] = 0;
+
+            return data;
+        }
+        return toData8(instrument.freq(this.note));
     }
 
     private float mix(double t, int i) {
         double result = 0;
-        for (int j = 0; j < i; j++)
+        for (int j = 0; j < i; j++) {
             result += Math.sin(t * j);
+        }
 
-        return Math.abs((float)result/i);
+        return Math.abs((float) result / i);
     }
 
     // returns data for that note (for 32-bit audio)
@@ -56,7 +91,45 @@ public class Note {
         double t = (Math.PI * freq * 2) / dwSamplePerSec;
 
         for (int i = 0; i < sampleDataSize; i++) {
-            data[i] = (float)(amplitude * Math.sin(t * i));
+            data[i] = (float) (amplitude * Math.sin(t * i));
+//            data[i] = (float)(amplitude * mix(i,3));
+        }
+
+        return data;
+    }
+
+    public short[] toData16(double freq) {
+        int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
+        System.out.println("sample size : " + sampleDataSize);
+
+        short[] data = new short[sampleDataSize];
+
+        double amplitude = this.volume * Float.MAX_VALUE;
+
+        // period
+        double t = (Math.PI * freq * 2) / dwSamplePerSec;
+
+        for (int i = 0; i < sampleDataSize; i++) {
+            data[i] = (short) (amplitude * Math.sin(t * i));
+//            data[i] = (float)(amplitude * mix(i,3));
+        }
+
+        return data;
+    }
+
+    public byte[] toData8(double freq) {
+        int sampleDataSize = (int) (dwSamplePerSec * (Math.pow(2, (-this.time + 4)) * 60 / bpm));
+        System.out.println("sample size : " + sampleDataSize);
+
+        byte[] data = new byte[sampleDataSize];
+
+        double amplitude = this.volume * Float.MAX_VALUE;
+
+        // period
+        double t = (Math.PI * freq * 2) / dwSamplePerSec;
+
+        for (int i = 0; i < sampleDataSize; i++) {
+            data[i] = (byte) (amplitude * Math.sin(t * i));
 //            data[i] = (float)(amplitude * mix(i,3));
         }
 
@@ -74,15 +147,7 @@ public class Note {
         return result;
     }
 
-//    public void printData() {
-//        float[] data = this.toData32();
-//        for (int i = 0; i < data.length; i++) {
-//            System.out.println(" " + data[i]);
-//        }
-//    }
-
     public static void main(String[] args) {
         Note note = new Note(new Piano(), 60, 1, 0.5, 60, 44100);
-//        note.printData();
     }
 }
