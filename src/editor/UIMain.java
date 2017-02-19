@@ -41,7 +41,7 @@ public class UIMain {
         for(int i = 0; i < notesList.length;i++){
       	  images.add(SpriteContainer.loadImage(noteist[i]));
         }
-        
+        int beat = userInputInt;
         Core.render.onEvent(() -> {
       	  
       	  Graphics2D.drawSprite(noteImage, new Vec2(0, 5), new Vec2(1), 0, Color4.WHITE);
@@ -57,34 +57,49 @@ public class UIMain {
             }
             Note[] result = .....();
             int notesEachLine = TEXT_LENGTH/(imageSize + 10);
+            
+            double count = 0;
             for(int i = 0; i < result.length; i += notesEachLine){
+            	
 	            for(int j = 0; j < notesEachLine - 1; j++){
+	            	count += 1 / result[i * notesEachLine+j];
 	            	int xPos = iP + j * (pL + 20);
 	            	int yPos = iP + i * 150 - (result[i].note - 57) * 10);
-	            	
-            		int y = result[j].note;
-            		while(y >= 60){
-            			Graphics2D.drawLine(new Vec2(xPos, yPos), new Vec2(xPos + 30, yPos), Color4.WHITE, 2);
-            			y --;
-            		}
-	           	 	
-            		Graphics2D.drawSprite(images[result[i * notesEachLine+j].time], 
-            				new Vec2(xPos, yPos, new Vec2(1,1), 0, Color4.WHITE);
-	            }
+	            	if(count == beat){
+            			Graphics2D.drawLine(new Vec2(xPos + 10, yPos), new Vec2(xPos + 10, yPos + 80),
+            					Color4.WHITE, 2);
+	            	}else if(count > beat){
+	            		throw new error();
+	            	}else{
+	            		int y = result[j].note;
+	            		while(y >= 60){
+	            			Graphics2D.drawLine(new Vec2(xPos, yPos), new Vec2(xPos + 30, yPos), Color4.WHITE, 2);
+	            			y--;
+	            		}
+	            		Graphics2D.drawSprite(images[result[i * notesEachLine+j].time], 
+	            				new Vec2(xPos, yPos, new Vec2(1,1), 0, Color4.WHITE);
+	            	}
+            	}	
             }
             
             for(int i = result.length - result.length % notesEachLine; i < result.length; i++){
             	int xPos = iP + i * (pL + 20);
             	int yPos = iP + result.length / notesEachLine * 150 - (result[i].note - 57) * 10);
-            	int y = result[i].note;
-         		while(y >= 60){
-         			Graphics2D.drawLine(new Vec2(xPos, yPos), new Vec2(xPos + 30, yPos), Color4.WHITE, 2);
-         			y --;
-         		}
-            	Graphics2D.drawSprite(images[result[i].time], 
-         				new Vec2(iP +  i * (pL + 20), iP + result.length / notesEachLine * 150 - (result[i].note - 57)*10),
-         				new Vec2(1,1), 0, Color4.WHITE);
-            }
+         		if(count == beat){
+         			Graphics2D.drawLine(new Vec2(xPos + 10, yPos), new Vec2(xPos + 10, yPos + 80),
+         					Color4.WHITE, 2);
+            	}else if(count > beat){
+            		throw new error();
+            	}else{
+	            	int y = result[i].note;
+	         		while(y >= 60){
+	         			Graphics2D.drawLine(new Vec2(xPos, yPos), new Vec2(xPos + 30, yPos), Color4.WHITE, 2);
+	         			y--;
+	         		}
+	            	Graphics2D.drawSprite(images[result[i].time], 
+	         				new Vec2(iP +  i * (pL + 20), iP + result.length / notesEachLine * 150 - (result[i].note - 57)*10),
+	         				new Vec2(1,1), 0, Color4.WHITE);
+            	}
         });
 
         Core.run();
