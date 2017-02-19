@@ -3,6 +3,7 @@ package data;
 import soundconverter.wavfile.Frame;
 import soundconverter.wavfile.Instrument;
 import soundconverter.wavfile.Piano;
+import util.Vec2;
 
 import java.util.Arrays;
 
@@ -16,7 +17,7 @@ public class Note implements Frame {
     public int time;
     public double volume; // On a scale from 0 to 1, where 0 is the quietest and 1 is the loudest
     public Instrument instrument;
-
+    public Vec2 pos;
     private float maxAmp32 = Float.MAX_VALUE;
     private int dwSamplePerSec;
 
@@ -31,6 +32,7 @@ public class Note implements Frame {
         this.volume = volume;
         this.bpm = bpm;
         this.dwSamplePerSec = dwSamplePerSec;
+        this.pos = new Vec2(0,0);
     }
 
     public float[] toData32() {
