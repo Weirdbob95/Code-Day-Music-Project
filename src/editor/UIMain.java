@@ -16,6 +16,7 @@ import org.lwjgl.input.Keyboard;
 import org.newdawn.slick.Color;
 import soundconverter.MusicCreator;
 import soundconverter.Recorder;
+import soundconverter.SimpleSheetMusic;
 import static soundconverter.SoundConverter.*;
 import soundconverter.wavfile.Instrument;
 import soundconverter.wavfile.Piano;
@@ -83,6 +84,8 @@ public class UIMain {
             Graphics2D.drawText(user.name, "Font", new Vec2(0, -5), Color.black);
             new Sprite("piano").draw(new Vec2(-SIZE + 40, 5), 0);
             new Sprite("trumpet").draw(new Vec2(-SIZE + 160, 5), 0);
+            new Sprite("flute").draw(new Vec2(-SIZE + 280, 5), 0);
+            new Sprite("trombone").draw(new Vec2(-SIZE + 400, 5), 0);
             new Sprite("pause").draw(new Vec2(SIZE - 20, 5), 0);
             new Sprite("start").draw(new Vec2(SIZE - 140, 5), 0);
 
@@ -187,19 +190,21 @@ public class UIMain {
     public static void userInteraction(inputManager user) {
         Input.whenMouse(0, true).onEvent(() -> {
             Vec2 click = Input.getMouse();
-//        System.out.print(click.x + 460 + " " + (click.y - 5));
-            if (Math.abs(click.x + 420) <= 40 && (Math.abs(click.y + 5)) <= 40) {
-                System.out.println(click.x + ",piano" + click.y);
-//                userInteraction(user, new Piano());
+            if (Math.abs(click.x + 450) <= 40 && (Math.abs(click.y + 5)) <= 40) {
+                SimpleSheetMusic.playListOfNotes(notesList, 0); // Piano
+            } else if (Math.abs(click.x + 330) <= 40 && (Math.abs(click.y + 5)) <= 40) {
+                SimpleSheetMusic.playListOfNotes(notesList, 56); // Trumpet
+            } else if (Math.abs(click.x + 210) <= 40 && (Math.abs(click.y + 5)) <= 40) {
+                SimpleSheetMusic.playListOfNotes(notesList, 71); // Clarinet
+            } else if (Math.abs(click.x + 90) <= 40 && (Math.abs(click.y + 5)) <= 40) {
+                SimpleSheetMusic.playListOfNotes(notesList, 57); // Trombone
+            } else if (Math.abs(click.x + -30) <= 40 && (Math.abs(click.y + 5)) <= 40) {
                 WAV.genWAE((List) notesList, "1234", 44100, 8);
                 playFile("1234");
-            } else if (Math.abs(click.x + 330) <= 40 && (Math.abs(click.y + 5)) <= 40) {
-//                userInteraction(user, new Piano());
-                System.out.println(click.x + ",trumpet" + click.y);
-            } else if (Math.abs(click.x + 260) <= 20 && (Math.abs(click.y + 20)) <= 20) {
-                user.verse++;
-            } else {
-//                userInteraction(user, new Piano());
+//            } else if (Math.abs(click.x + 260) <= 20 && (Math.abs(click.y + 20)) <= 20) {
+//                user.verse++;
+//            } else {
+////                userInteraction(user, new Piano());
             }
         });
     }

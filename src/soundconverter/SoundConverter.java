@@ -18,7 +18,6 @@ import javax.sound.sampled.Clip;
 import org.lwjgl.input.Keyboard;
 import soundconverter.fft.Complex;
 import soundconverter.fft.FFT;
-import soundconverter.wavfile.Frame;
 import soundconverter.wavfile.WAV;
 import soundconverter.wavfile.WavFile;
 import soundconverter.wavfile.WavFileException;
@@ -43,7 +42,7 @@ public class SoundConverter {
 
         // Draw the fft
         fft = new Framebuffer(new TextureAttachment());
-        double pixelSize = 2;
+        double pixelSize = 4;
 
         Mutable<Long> initialTime = new Mutable(System.currentTimeMillis());
 
@@ -70,7 +69,7 @@ public class SoundConverter {
                 List music = MusicCreator.toNoteList(result);
                 WAV.genWAE(music, "sounds/music", 44100, 8);
                 drawFFT(fft, pixelSize);
-                playFile("sounds/music");
+//                playFi"sounds/music");
                 //playFile("sounds/recording");
                 initialTime.o = System.currentTimeMillis();
                 recording.o = false;
